@@ -3,9 +3,10 @@
 Status: implemented on the auth-hardening branch; local checks and isolated Neon database checks passed. Not deployed as a website.
 This establishes identity, licensing, registered-device limits and server session leases.
 It does not attest an executable, prevent local patching, or prove an OS process count.
-No gameplay functionality has been moved to the server. The native launcher remains a
-UI preview until it implements this protocol; do not deploy this backend to production
-before a compatible launcher and a staging exercise are ready.
+No gameplay functionality has been moved to the server. A compatible Windows staging launcher has now implemented this protocol on the local
+codex/launcher-authentication branch, with staging acceptance described below. It is
+not published. A coordinated production rollout and the remaining enforcement work
+are still required before production deployment.
 
 ## Decisions and defaults
 
@@ -149,6 +150,31 @@ test guild and isolated Neon database: the user completed OAuth and a manual mem
 grant; read-only checks confirmed the persisted session and Customer role. The
 browser-approved HTTP probe passed device-bound pairing, identity/licensing checks,
 missing-proof and replay rejection, session creation/renewal, refresh rotation and
-sign-out. Its temporary installation and credentials were revoked afterward. The
-native launcher still needs protocol 2 integration and Windows credential storage;
-this evidence does not authorize a production rollout.
+sign-out. Its temporary installation and credentials were revoked afterward. The Windows staging launcher subsequently implemented protocol 2 and Windows-protected
+credential storage as recorded below. This evidence does not authorize a production rollout.
+
+
+## Native Windows staging acceptance
+
+The local native launcher now implements browser code pairing, a persisted
+non-exportable Windows Software KSP ES256 key, DPAPI-protected refresh storage,
+serialized refresh rotation, identity/membership checks and online client leases.
+Normal/account/command-line launches and explicit attach entry points are gated;
+explicit attach itself still awaits live acceptance. Production transport is pinned
+to HTTPS; local staging is a separate compile-time configuration and credential scope.
+Direct DLL/plugin enforcement is separate work and is not claimed complete.
+
+Real native tests passed browser-approved pairing, saved-sign-in restoration, session
+allocation/end and periodic heartbeat renewal. The user confirmed game launch, normal
+manual close, membership revocation closing the game and showing Membership check
+required, and regrant/recheck recovery. Read-only checks confirmed the corresponding
+membership/session records and Customer role removal/restoration.
+
+An authorized local endpoint-outage test stopped only the guarded localhost staging
+server while a test game ran at its login screen. The game exited when its existing
+lease elapsed, while the launcher remained running and staging remained offline. The
+server lease expired naturally without explicit revocation; no active native leases
+remained, and membership was preserved. The staging site was restarted and returned
+HTTP 200. Post-outage launcher recovery awaits user confirmation. This tests a failed
+endpoint connection, not every internet failure mode or full executable integrity.
+Production and hosted Vercel configuration remain unchanged.

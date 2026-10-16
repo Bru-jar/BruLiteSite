@@ -162,3 +162,17 @@ slots. The user's account, website session and manual licence are preserved. Abr
 process termination can interrupt cleanup; disconnect its named device in staging
 Admin > Users if necessary. This probe is not the native launcher; Windows key and
 credential storage, real launcher integration and hosted deployment remain pending.
+
+
+## Native launcher staging status
+
+The compatible Windows staging launcher is implemented in the native repository's
+local codex/launcher-authentication branch. Native browser pairing, protected saved
+sign-in restoration, session creation/end and real periodic renewal passed. The user
+confirmed game launch, manual close, revocation closing the game and membership
+regrant/recheck recovery. A controlled local staging endpoint outage also caused the
+game to exit when the existing lease expired; the launcher remained running. The
+lease was expired, not explicitly revoked, and manual membership was preserved.
+The guarded local site was restarted and returned HTTP 200. Post-outage launcher
+recovery is still awaiting confirmation; explicit attach and hosted deployment remain
+pending. The native QA ledger contains the detailed evidence and limitations.
