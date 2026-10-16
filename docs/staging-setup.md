@@ -80,3 +80,27 @@ References:
 - https://vercel.com/docs/deployments/environments
 - https://vercel.com/docs/environment-variables
 - https://discord.com/developers/docs/topics/oauth2
+
+## Database verification completed (2026-10-16)
+
+The supplied connection initially contained a psql wrapper; only its PostgreSQL URL
+was retained in the ignored staging file. The endpoint was checked against the local
+production configuration. The supplied branch contained a clone of the main database.
+A new blank brulite_auth_staging database was created on that separate staging endpoint;
+the inherited database and its copied records were left untouched. The staging URL was
+updated to target the blank database, the migration guard passed, and all five reviewed
+migrations were applied there. No production migration or application deployment ran.
+
+Run the opt-in verification only after the staging configuration has passed the guard:
+
+```powershell
+node --import tsx scripts/verify-staging.ts
+```
+
+This invokes the actual service/Neon WebSocket transaction implementation using separate
+connections, not the embedded test engine. It creates one synthetic account and temporary
+credentials, tests races for the final device and running-client slots, proof replay,
+concurrent refresh reuse, lease expiry and revoked membership, then removes its fixtures.
+It does not call Discord or Stripe and never displays credentials. All checks passed.
+The staging migration history contains the five expected migrations. Real browser OAuth,
+hosted deployment configuration and a compatible native launcher remain to be verified.

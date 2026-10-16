@@ -1,6 +1,6 @@
 # Desktop authentication protocol 2
 
-Status: implemented and locally verified on the auth-hardening branch. Not deployed.
+Status: implemented on the auth-hardening branch; local checks and isolated Neon database checks passed. Not deployed as a website.
 This establishes identity, licensing, registered-device limits and server session leases.
 It does not attest an executable, prevent local patching, or prove an OS process count.
 No gameplay functionality has been moved to the server. The native launcher remains a
@@ -123,8 +123,8 @@ is no public cleanup action or automatic deployment/migration in the build.
    for operational recovery, but gate desktop access during a failed rollout.
 
 Local verification: TypeScript, production build, ESLint on changed files, and isolated
-PostgreSQL/cryptographic tests. No production migration, token minting or login testing
-has been performed. Full-repository lint has an existing mobile-menu set-state-in-effect
+PostgreSQL/cryptographic tests. No production migration or real browser login testing has been performed. Synthetic
+credentials were issued only inside the isolated staging database and removed after testing. Full-repository lint has an existing mobile-menu set-state-in-effect
 violation unrelated to this change. This hardening is not a penetration-test certificate
 or a promise of crack-proof software.
 
@@ -136,3 +136,10 @@ no forced package downgrades or unrelated dependency changes were applied. Full
 repository ESLint remains blocked by the pre-existing mobile-menu effect violation.
 See [staging setup](staging-setup.md) for the next user action. The staging checker
 was exercised without a config file and correctly refused to migrate anything.
+
+The isolated Neon verification also passed using independent WebSocket connections:
+last-device allocation, proof replay, last-session allocation, refresh reuse revoking
+replacement credentials, lease expiry and revoked membership. The blank staging database
+has all five migrations; synthetic verification records were removed. This strengthens
+the database concurrency evidence but does not complete the browser/launcher acceptance
+tests or verify a deployed Vercel environment. See the updated staging setup record.
