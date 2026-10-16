@@ -1,7 +1,8 @@
 # Set up isolated authentication staging
 
-The local branch is codex/auth-hardening in D:\Dev\repos\BruLiteSite. The live site
-is still running the previous authentication protocol. Do not use db:migrate here:
+The local branch is codex/auth-hardening in D:\Dev\repos\BruLiteSite. Protocol 2
+was subsequently deployed to production; see the production rollout record in
+[client authentication](client-authentication.md). Do not use db:migrate for staging:
 that existing command reads .env.local. Keep that production file unchanged.
 
 ## First action: Neon

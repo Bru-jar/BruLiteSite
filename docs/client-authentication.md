@@ -1,12 +1,14 @@
 # Desktop authentication protocol 2
 
-Status: implemented on the auth-hardening branch; local checks and isolated Neon database checks passed. Not deployed as a website.
+Status: protocol 2 deployed on the production site after migration 0004 on
+2026-10-17. Local checks, isolated Neon concurrency tests, native staging acceptance
+and hosted production smoke checks passed as recorded below. Completing browser
+sign-in and pairing a real installation against production still require user acceptance.
 This establishes identity, licensing, registered-device limits and server session leases.
 It does not attest an executable, prevent local patching, or prove an OS process count.
-No gameplay functionality has been moved to the server. A compatible Windows staging launcher has now implemented this protocol on the local
-codex/launcher-authentication branch, with staging acceptance described below. It is
-not published. A coordinated production rollout and the remaining enforcement work
-are still required before production deployment.
+No gameplay functionality has been moved to the server. The compatible Windows
+launcher source is published in Alpha v0.3.8, with native staging acceptance below.
+A production binary distribution and direct DLL/plugin enforcement remain separate work.
 
 ## Decisions and defaults
 
@@ -182,3 +184,43 @@ new game lease was created by recovery. This run did not cross access-token expi
 while offline; native worker/DPAPI fixtures cover that boundary. This tests a failed
 endpoint connection, not every internet failure mode or full executable integrity.
 Production and hosted Vercel configuration remain unchanged.
+
+
+## Production rollout on 2026-10-17
+
+The user authorized pushing the site and confirmed creation of the pre-auth-0-3-8
+backup branch through Vercel/Neon. Its connection string was not requested or used;
+the existing production connection remained selected. The backup's creation is
+user-confirmed, not independently verified through a Neon management API.
+
+Read-only preflight found four applied migrations, four users, one active legacy
+unbound desktop credential and no incompatible device-limit values. Existing
+migration timestamps and SQL hashes matched the reviewed files after accounting
+for Windows line endings. The reviewed 0004_auth_hardening migration was applied
+through the existing Drizzle Neon HTTP migrator. Post-migration checks confirmed
+five applied migrations, three plan policies, preserved user/membership counts and
+zero live unbound legacy credentials. No staging connection was substituted.
+
+The tested auth-hardening branch was pushed to main at 748c85f. The review closed
+as merged. The pushed preview had already completed successfully, and live requests
+to the production origin subsequently verified the new implementation:
+
+- Sign-in page returned 200; unauthenticated client identity returned 401 unauthorized.
+- The retired raw-token POST returned 426 pairing_required with no-store responses.
+- OAuth initiation redirected to Discord with the correct production callback,
+  a Secure/HttpOnly/SameSite=Lax nonce cookie and no-store caching. The redirect was
+  inspected without completing an OAuth login or printing the nonce/state.
+- A cross-origin mutation with an invalid test session cookie returned 403, and an
+  invalid session attempting the dashboard redirected to sign-in.
+- An ephemeral public installation key created a protocol-2 pending pairing on the
+  production origin; a correctly signed poll returned 202 pending. That unapproved
+  pairing was removed using its exact code and secret hash. No account was linked,
+  installation registered or client credential issued by the smoke test.
+
+These hosted checks do not establish completed browser OAuth, paid membership or
+native game-session acceptance in production. A user must sign in again and pair
+against the production website for that acceptance. Existing sessions use the new
+signing purpose and require fresh sign-in; the legacy desktop credential needs
+browser pairing. Hosted CRON_SECRET configuration and the protected cleanup schedule
+were not independently verified because Vercel management credentials were unavailable.
+The cleanup setup described above remains an operational follow-up.
