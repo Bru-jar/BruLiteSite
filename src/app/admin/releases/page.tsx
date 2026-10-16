@@ -1,3 +1,4 @@
+import { requireAdminPage } from "@/lib/admin-page";
 import { desc } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { releases } from "@/lib/db/schema";
@@ -8,6 +9,7 @@ export const metadata = { title: "Releases" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminReleasesPage() {
+  await requireAdminPage();
   const rows = await db
     .select()
     .from(releases)

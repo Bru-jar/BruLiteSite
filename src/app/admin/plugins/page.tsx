@@ -1,3 +1,4 @@
+import { requireAdminPage } from "@/lib/admin-page";
 import { asc } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { plugins } from "@/lib/db/schema";
@@ -8,6 +9,7 @@ export const metadata = { title: "Plugins" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminPluginsPage() {
+  await requireAdminPage();
   const rows = await db
     .select()
     .from(plugins)

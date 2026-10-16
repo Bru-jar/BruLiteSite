@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { getSession } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requireAdminPage } from "@/lib/admin-page";
 import type { ReactNode } from "react";
 
 const adminLinks = [
@@ -17,8 +16,7 @@ export default async function AdminLayout({
 }: {
   children: ReactNode;
 }) {
-  const session = await getSession();
-  if (!session?.isAdmin) redirect("/dashboard");
+  await requireAdminPage();
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">

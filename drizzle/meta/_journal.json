@@ -29,6 +29,13 @@
       "when": 1791307444301,
       "tag": "0003_woozy_gideon",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792179372149,
+      "tag": "0004_auth_hardening",
+      "breakpoints": true
     }
   ]
 }

@@ -17,7 +17,12 @@ const createSchema = z.object({
 });
 
 const MAX_IMAGE_SIZE = 8 * 1024 * 1024; // 8 MB
-const IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
+const IMAGE_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif",
+]);
 
 /** GET /api/tickets — list the current user's tickets. */
 export async function GET() {
@@ -43,7 +48,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const rl = rateLimit(`ticket:${session.userId}`, 5, 60_000);
+  const rl = await rateLimit(`ticket:${session.userId}`, 5, 60_000);
   if (!rl.ok) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
@@ -63,7 +68,7 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json(
       { error: "invalid_body", issues: parsed.error.flatten() },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -86,7 +91,7 @@ export async function POST(req: Request) {
       // Fail rather than silently drop evidence the user expected to attach.
       return NextResponse.json(
         { error: "image_upload_failed" },
-        { status: 502 }
+        { status: 502 },
       );
     }
   }

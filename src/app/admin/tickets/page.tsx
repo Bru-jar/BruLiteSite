@@ -1,3 +1,4 @@
+import { requireAdminPage } from "@/lib/admin-page";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { tickets, users } from "@/lib/db/schema";
@@ -9,6 +10,7 @@ export const metadata = { title: "Tickets" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminTicketsPage() {
+  await requireAdminPage();
   const rows = await db
     .select({
       id: tickets.id,
@@ -29,7 +31,10 @@ export default async function AdminTicketsPage() {
 
   return (
     <div>
-      <PageHeader title="Tickets" subtitle="Bug reports and feature requests." />
+      <PageHeader
+        title="Tickets"
+        subtitle="Bug reports and feature requests."
+      />
       {rows.length === 0 ? (
         <Card className="py-10 text-center text-sm text-muted">
           No tickets yet.
@@ -67,7 +72,9 @@ export default async function AdminTicketsPage() {
               )}
               {t.extra && (
                 <p className="mt-3 whitespace-pre-wrap text-sm text-muted">
-                  <span className="font-medium text-foreground">Other info: </span>
+                  <span className="font-medium text-foreground">
+                    Other info:{" "}
+                  </span>
                   {t.extra}
                 </p>
               )}

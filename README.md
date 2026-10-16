@@ -12,7 +12,7 @@ Drizzle · Stripe · Discord OAuth + bot REST · Vercel Blob
 
 **Stripe is the payment provider; the BruLite database is the membership
 authority.** Client access is decided solely by the `entitlements` table,
-checked by the desktop client via `/api/client/entitlement` with a short-lived
+checked by the desktop client via `/api/client/entitlement` with a key-bound
 token. The Discord `Customer` role is a perk that mirrors entitlement state.
 
 ## Quick start
@@ -46,13 +46,13 @@ Browser ──► Next.js ──► Neon Postgres (Drizzle)
 
 ### Client pairing flow (desktop app)
 
-1. Client `POST /api/client/pair` → `{ code, verifyUrl }`
-2. Client opens `verifyUrl` in the user's browser → Discord OAuth → "Authorize client"
-3. Client polls `GET /api/client/pair/{code}` → `202` pending → `{ token }` once complete (token delivered exactly once, then cleared)
-4. Client calls `GET /api/client/me` and `GET /api/client/entitlement` with `Authorization: Bearer <token>` (30-day expiry)
-5. Tokens are revocable from the dashboard or via `POST /api/client/revoke`
+The hardened protocol uses browser-approved, key-bound pairing, five-minute access
+credentials, rotating refresh credentials and server-managed running-client leases.
+Registered devices and concurrent clients have independent plan limits with admin
+overrides. Legacy copy/paste keys are retired. See [the complete protocol and rollout
+checklist](docs/client-authentication.md) before deployment; existing clients require
+an update and the database migration is intentionally not run by the build.
 
-No permanent keys or secrets ever ship in the client.
 
 ## Scripts
 

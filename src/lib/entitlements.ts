@@ -1,11 +1,8 @@
 import { and, desc, eq } from "drizzle-orm";
+import { authTransaction } from "@/lib/db/transaction";
+import { clientSessions } from "@/lib/db/schema";
 import { db } from "@/lib/db/client";
-import {
-  auditLog,
-  entitlements,
-  subscriptions,
-  users,
-} from "@/lib/db/schema";
+import { auditLog, entitlements, subscriptions, users } from "@/lib/db/schema";
 import { addGuildRole, removeGuildRole } from "@/lib/discord";
 import { env } from "@/lib/env";
 import { decideEntitlement } from "@/lib/entitlement-logic";
@@ -40,7 +37,9 @@ export async function syncEntitlementFromSubscription(userId: string) {
   const [existing] = await db
     .select()
     .from(entitlements)
-    .where(and(eq(entitlements.userId, userId), eq(entitlements.source, "stripe")))
+    .where(
+      and(eq(entitlements.userId, userId), eq(entitlements.source, "stripe")),
+    )
     .orderBy(desc(entitlements.grantedAt))
     .limit(1);
 
@@ -73,7 +72,9 @@ export async function syncEntitlementFromSubscription(userId: string) {
         status: decision,
         revokedAt: decision === "revoked" ? now : null,
         reason:
-          decision === "revoked" ? `subscription ${sub?.status}` : "period ended",
+          decision === "revoked"
+            ? `subscription ${sub?.status}`
+            : "period ended",
       })
       .where(eq(entitlements.id, existing.id));
     await syncCustomerRole(userId, false);
@@ -82,7 +83,7 @@ export async function syncEntitlementFromSubscription(userId: string) {
 
 /** Read the effective entitlement status for a user (used by API + dashboard). */
 export async function getEntitlementStatus(
-  userId: string
+  userId: string,
 ): Promise<EntitlementStatus> {
   const now = new Date();
 
@@ -149,14 +150,25 @@ export async function getEntitlementStatus(
 export async function revokeEntitlement(
   userId: string,
   reason: string,
-  actorUserId?: string
+  actorUserId?: string,
 ) {
-  await db
-    .update(entitlements)
-    .set({ status: "revoked", revokedAt: new Date(), reason })
-    .where(
-      and(eq(entitlements.userId, userId), eq(entitlements.status, "active"))
-    );
+  await authTransaction(async (tx) => {
+    await tx
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.id, userId))
+      .for("update");
+    await tx
+      .update(entitlements)
+      .set({ status: "revoked", revokedAt: new Date(), reason })
+      .where(
+        and(eq(entitlements.userId, userId), eq(entitlements.status, "active")),
+      );
+    await tx
+      .update(clientSessions)
+      .set({ revokedAt: new Date() })
+      .where(eq(clientSessions.userId, userId));
+  });
   await syncCustomerRole(userId, false);
   await db.insert(auditLog).values({
     actorUserId: actorUserId ?? null,
@@ -170,7 +182,7 @@ export async function revokeEntitlement(
 export async function grantManualEntitlement(
   userId: string,
   actorUserId: string,
-  expiresAt?: Date
+  expiresAt?: Date,
 ) {
   // Expire any existing manual entitlement to keep the latest-authoritative.
   await db
@@ -180,8 +192,8 @@ export async function grantManualEntitlement(
       and(
         eq(entitlements.userId, userId),
         eq(entitlements.source, "manual"),
-        eq(entitlements.status, "active")
-      )
+        eq(entitlements.status, "active"),
+      ),
     );
   await db.insert(entitlements).values({
     userId,

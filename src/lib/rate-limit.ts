@@ -1,31 +1,41 @@
-/**
- * Best-effort in-memory rate limiter. On serverless this limits per-instance;
- * pair with Vercel WAF / Upstash for hard guarantees if abuse becomes an issue.
- */
-const buckets = new Map<string, { count: number; resetAt: number }>();
+import { sql, type SQL } from "drizzle-orm";
+import { db } from "@/lib/db/client";
+import { hashToken } from "@/lib/tokens";
 
-export function rateLimit(
+/** Shared atomic fixed-window buckets. Database errors propagate: no process-local fail-open fallback. */
+export async function rateLimit(
   key: string,
   limit: number,
-  windowMs: number
-): { ok: boolean; retryAfterMs: number } {
-  const now = Date.now();
-  const b = buckets.get(key);
-  if (!b || b.resetAt <= now) {
-    buckets.set(key, { count: 1, resetAt: now + windowMs });
-    return { ok: true, retryAfterMs: 0 };
-  }
-  if (b.count >= limit) {
-    return { ok: false, retryAfterMs: b.resetAt - now };
-  }
-  b.count += 1;
-  return { ok: true, retryAfterMs: 0 };
+  windowMs: number,
+  run: (statement: SQL) => Promise<Record<string, unknown>[]> = async (
+    statement,
+  ) => (await db.execute(statement)).rows,
+): Promise<{ ok: boolean; retryAfterMs: number }> {
+  if (
+    !Number.isInteger(limit) ||
+    limit < 1 ||
+    !Number.isInteger(windowMs) ||
+    windowMs < 1
+  )
+    throw new Error("Invalid rate limit");
+  const rows =
+    await run(sql`INSERT INTO auth_rate_limits (key, count, resets_at)
+    VALUES (${hashToken(key)},1,clock_timestamp()+${windowMs}*interval '1 millisecond')
+    ON CONFLICT (key) DO UPDATE SET
+      count=CASE WHEN auth_rate_limits.resets_at<=clock_timestamp() THEN 1 ELSE LEAST(auth_rate_limits.count+1,${limit + 1}) END,
+      resets_at=CASE WHEN auth_rate_limits.resets_at<=clock_timestamp() THEN clock_timestamp()+${windowMs}*interval '1 millisecond' ELSE auth_rate_limits.resets_at END
+    RETURNING count, GREATEST(0,EXTRACT(EPOCH FROM (resets_at-clock_timestamp()))*1000) AS retry`);
+  const row = rows[0];
+  if (!row) throw new Error("Rate limit unavailable");
+  return {
+    ok: Number(row.count) <= limit,
+    retryAfterMs: Math.ceil(Number(row.retry)),
+  };
 }
-
 export function clientIp(req: Request): string {
+  // Trust this header only behind the configured Vercel ingress; direct-origin access must be blocked.
   return (
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    req.headers.get("x-real-ip") ??
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim().slice(0, 64) ||
     "unknown"
   );
 }

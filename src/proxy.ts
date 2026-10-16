@@ -3,8 +3,17 @@ import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth";
 
 const PROTECTED = ["/dashboard", "/support", "/admin"];
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  if (
+    pathname.startsWith("/api/") &&
+    !["GET", "HEAD", "OPTIONS"].includes(req.method) &&
+    req.cookies.has(SESSION_COOKIE)
+  ) {
+    const expected = new URL(process.env.NEXT_PUBLIC_APP_URL || req.url).origin;
+    if (req.headers.get("origin") !== expected)
+      return new NextResponse("Forbidden", { status: 403 });
+  }
   if (!PROTECTED.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     return NextResponse.next();
   }
@@ -30,5 +39,10 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/support/:path*", "/admin/:path*"],
+  matcher: [
+    "/api/:path*",
+    "/dashboard/:path*",
+    "/support/:path*",
+    "/admin/:path*",
+  ],
 };

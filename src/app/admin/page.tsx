@@ -1,10 +1,7 @@
+import { requireAdminPage } from "@/lib/admin-page";
 import { count, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
-import {
-  entitlements,
-  tickets,
-  users,
-} from "@/lib/db/schema";
+import { entitlements, tickets, users } from "@/lib/db/schema";
 import { Card, CardTitle, PageHeader, Badge } from "@/components/ui";
 import Link from "next/link";
 
@@ -12,6 +9,7 @@ export const metadata = { title: "Admin" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
+  await requireAdminPage();
   const [[userCount], [entitledCount], [openTickets], recentTickets] =
     await Promise.all([
       db.select({ count: count() }).from(users),

@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const rl = rateLimit(`checkout:${session.userId}`, 10, 60_000);
+  const rl = await rateLimit(`checkout:${session.userId}`, 10, 60_000);
   if (!rl.ok) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
     console.error("checkout failed", e);
     return NextResponse.json(
       { error: "checkout_unavailable" },
-      { status: 502 }
+      { status: 502 },
     );
   }
 }

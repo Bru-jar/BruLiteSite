@@ -1,8 +1,11 @@
+import { DisconnectDevice } from "@/components/linked-devices";
 import Link from "next/link";
-import { desc, eq, and, isNull } from "drizzle-orm";
+import { desc, eq, and, isNull, gt } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import {
-  licenseTokens,
+  clientDevices,
+  clientSessions,
+  licensePolicies,
   releases,
   subscriptions,
   tickets,
@@ -14,8 +17,6 @@ import { Badge, Card, CardTitle, PageHeader } from "@/components/ui";
 import {
   ManageBillingButton,
   NewTokenButton,
-  RegenerateTokenButton,
-  RevokeTokenButton,
 } from "@/components/dashboard-actions";
 import { Download, KeyRound, Ticket } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -34,7 +35,16 @@ export default async function DashboardPage({
   if (!session) redirect("/auth/signin?next=/dashboard");
   const { checkout } = await searchParams;
 
-  const [ent, [sub], tokens, myTickets, releaseRows, [me]] = await Promise.all([
+  const [
+    ent,
+    [sub],
+    devices,
+    myTickets,
+    releaseRows,
+    [me],
+    policies,
+    activeSessions,
+  ] = await Promise.all([
     getEntitlementStatus(session.userId),
     db
       .select()
@@ -44,14 +54,14 @@ export default async function DashboardPage({
       .limit(1),
     db
       .select()
-      .from(licenseTokens)
+      .from(clientDevices)
       .where(
         and(
-          eq(licenseTokens.userId, session.userId),
-          isNull(licenseTokens.revokedAt),
+          eq(clientDevices.userId, session.userId),
+          isNull(clientDevices.revokedAt),
         ),
       )
-      .orderBy(desc(licenseTokens.createdAt)),
+      .orderBy(desc(clientDevices.createdAt)),
     db
       .select()
       .from(tickets)
@@ -65,14 +75,29 @@ export default async function DashboardPage({
       .orderBy(desc(releases.createdAt))
       .limit(10),
     db
-      .select({ deviceLimit: users.deviceLimit })
+      .select({
+        deviceLimit: users.deviceLimitOverride,
+        concurrentLimit: users.concurrentLimitOverride,
+      })
       .from(users)
       .where(eq(users.id, session.userId))
       .limit(1),
+    db.select().from(licensePolicies),
+    db
+      .select({ id: clientSessions.id })
+      .from(clientSessions)
+      .where(
+        and(
+          eq(clientSessions.userId, session.userId),
+          isNull(clientSessions.revokedAt),
+          gt(clientSessions.expiresAt, new Date()),
+        ),
+      ),
   ]);
 
-  const boundDevices = tokens.filter((t) => t.deviceFingerprint).length;
-  const deviceLimit = me?.deviceLimit ?? 2;
+  const plan = policies.find((p) => p.plan === (ent.plan ?? "manual"));
+  const deviceLimit = me?.deviceLimit ?? plan?.deviceLimit ?? 0;
+  const concurrentLimit = me?.concurrentLimit ?? plan?.concurrentLimit ?? 0;
 
   // Latest bundle per platform (universal counts for everything).
   const latestByPlatform = new Map<string, (typeof releaseRows)[number]>();
@@ -204,45 +229,32 @@ export default async function DashboardPage({
               <KeyRound className="h-4 w-4 text-accent" /> Linked clients
             </span>
           </CardTitle>
-          {tokens.length === 0 ? (
+          <p className="mb-3 text-xs text-muted">
+            {devices.length} of {deviceLimit} registered devices.{" "}
+            {activeSessions.length} of {concurrentLimit} running clients.
+          </p>
+          {devices.length === 0 ? (
             <p className="text-sm text-muted">
-              No linked devices. Sign in from inside the BruLite client, or
-              create a client token here and paste it in.
+              No linked devices. Sign in from inside BruLite to connect this
+              computer.
             </p>
           ) : (
-            <>
-              <p className="mb-3 text-xs text-muted">
-                {boundDevices} of {deviceLimit} device seats in use.
-              </p>
-              <ul className="space-y-3">
-                {tokens.map((t) => (
-                  <li
-                    key={t.id}
-                    className="rounded-lg border border-border bg-surface-2 px-4 py-2.5 text-sm"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="font-medium">{t.label}</span>
-                        <span className="ml-3 text-muted">
-                          expires {fmtDate(t.expiresAt)}
-                          {t.expiresAt <= new Date() && " (expired)"}
-                        </span>
-                      </div>
-                      <div className="flex gap-1">
-                        <RegenerateTokenButton tokenId={t.id} />
-                        <RevokeTokenButton tokenId={t.id} />
-                      </div>
-                    </div>
-                    <p className="mt-1 text-xs text-muted">
-                      {t.deviceName
-                        ? `Device: ${t.deviceName}`
-                        : "No device bound yet"}
-                      {t.lastUsedAt && ` · last used ${fmtDate(t.lastUsedAt)}`}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </>
+            <ul className="space-y-3">
+              {devices.map((device) => (
+                <li
+                  key={device.id}
+                  className="flex items-center justify-between rounded-lg border border-border bg-surface-2 px-4 py-3 text-sm"
+                >
+                  <span>
+                    {device.name}
+                    <span className="ml-3 text-muted">
+                      Linked {fmtDate(device.createdAt)}
+                    </span>
+                  </span>
+                  <DisconnectDevice deviceId={device.id} />
+                </li>
+              ))}
+            </ul>
           )}
           <div className="mt-4">
             <NewTokenButton />

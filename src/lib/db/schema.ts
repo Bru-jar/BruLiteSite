@@ -19,7 +19,9 @@ export const users = pgTable(
     avatar: text("avatar"),
     email: text("email"),
     /** Max simultaneously bound client devices (admin-adjustable seat limit). */
-    deviceLimit: integer("device_limit").notNull().default(2),
+    deviceLimit: integer("device_limit").notNull().default(2), // legacy display/migration only
+    deviceLimitOverride: integer("device_limit_override"),
+    concurrentLimitOverride: integer("concurrent_limit_override"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -133,6 +135,8 @@ export const licenseTokens = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     tokenHash: text("token_hash").notNull(),
+    deviceId: uuid("device_id").references(() => clientDevices.id),
+    familyId: uuid("family_id"),
     label: text("label").notNull().default("client"),
     /**
      * Device seat binding — a sha256 fingerprint of the machine's hardware ID,
@@ -166,7 +170,10 @@ export const clientPairings = pgTable(
     status: text("status").notNull().default("pending"), // pending | complete | expired
     licenseTokenId: uuid("license_token_id"),
     /** Raw client token, delivered once to the poller then cleared. */
-    pendingToken: text("pending_token"),
+    pendingToken: text("pending_token"), // legacy: scrubbed by migration, never written by v2
+    secretHash: text("secret_hash"),
+    publicKey: jsonb("public_key").$type<Record<string, string>>(),
+    deviceName: text("device_name"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -248,3 +255,99 @@ export const auditLog = pgTable(
   },
   (t) => [index("audit_log_created_idx").on(t.createdAt)],
 );
+
+/** Registered installations are distinct from access tokens and running game sessions. */
+export const clientDevices = pgTable(
+  "client_devices",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    keyThumbprint: text("key_thumbprint").notNull(),
+    publicKey: jsonb("public_key").$type<Record<string, string>>().notNull(),
+    name: text("name").notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("client_device_user_key_idx").on(t.userId, t.keyThumbprint),
+  ],
+);
+export const licensePolicies = pgTable("license_policies", {
+  plan: text("plan").primaryKey(),
+  deviceLimit: integer("device_limit").notNull(),
+  concurrentLimit: integer("concurrent_limit").notNull(),
+});
+export const clientRefreshTokens = pgTable(
+  "client_refresh_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    deviceId: uuid("device_id")
+      .notNull()
+      .references(() => clientDevices.id),
+    familyId: uuid("family_id").notNull(),
+    tokenHash: text("token_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    consumedAt: timestamp("consumed_at", { withTimezone: true }),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex("refresh_hash_idx").on(t.tokenHash),
+    index("refresh_family_idx").on(t.familyId),
+  ],
+);
+export const clientSessions = pgTable(
+  "client_sessions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    deviceId: uuid("device_id")
+      .notNull()
+      .references(() => clientDevices.id),
+    familyId: uuid("family_id").notNull(),
+    instanceId: uuid("instance_id").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("client_session_user_idx").on(t.userId)],
+);
+export const clientProofs = pgTable(
+  "client_proofs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    deviceId: uuid("device_id")
+      .notNull()
+      .references(() => clientDevices.id),
+    proofId: text("proof_id").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (t) => [uniqueIndex("client_proof_replay_idx").on(t.deviceId, t.proofId)],
+);
+export const webSessions = pgTable("web_sessions", {
+  id: uuid("id").primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+});
+export const oauthAttempts = pgTable("oauth_attempts", {
+  id: uuid("id").primaryKey(),
+  nonceHash: text("nonce_hash").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+});
+export const authRateLimits = pgTable("auth_rate_limits", {
+  key: text("key").primaryKey(),
+  count: integer("count").notNull(),
+  resetsAt: timestamp("resets_at", { withTimezone: true }).notNull(),
+});

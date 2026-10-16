@@ -1,8 +1,11 @@
+import { requireAdminPage } from "@/lib/admin-page";
 import { and, desc, eq, ilike, or } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { entitlements, subscriptions, users } from "@/lib/db/schema";
 import { Badge, Card, PageHeader } from "@/components/ui";
 import { EntitlementActions } from "@/components/user-actions";
+import { LicensePolicyManager } from "@/components/license-policy-manager";
+import { licensePolicies } from "@/lib/db/schema";
 import { UserDevicesPanel } from "@/components/user-devices-panel";
 import { avatarUrl } from "@/lib/auth";
 
@@ -12,9 +15,14 @@ export const dynamic = "force-dynamic";
 export default async function AdminUsersPage({
   searchParams,
 }: PageProps<"/admin/users">) {
+  await requireAdminPage();
   const { q } = await searchParams;
   const query = typeof q === "string" && q ? `%${q}%` : null;
 
+  const policies = await db
+    .select()
+    .from(licensePolicies)
+    .orderBy(licensePolicies.plan);
   const rows = await db
     .select({
       id: users.id,
@@ -44,6 +52,7 @@ export default async function AdminUsersPage({
     <div>
       <PageHeader title="Users" subtitle="Search by Discord name or ID." />
 
+      <LicensePolicyManager policies={policies} />
       <form className="mb-6">
         <input
           name="q"

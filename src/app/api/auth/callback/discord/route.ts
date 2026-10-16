@@ -1,9 +1,11 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { users } from "@/lib/db/schema";
 import {
   SESSION_COOKIE,
+  OAUTH_COOKIE,
   createSessionToken,
   verifyOAuthState,
 } from "@/lib/auth";
@@ -18,7 +20,14 @@ import {
 import { env } from "@/lib/env";
 
 function redirect(path: string) {
-  return NextResponse.redirect(`${env.APP_URL}${path}`);
+  const res = NextResponse.redirect(`${env.APP_URL}${path}`);
+  res.cookies.set(OAUTH_COOKIE, "", {
+    httpOnly: true,
+    path: "/api/auth",
+    maxAge: 0,
+  });
+  res.headers.set("Cache-Control", "no-store");
+  return res;
 }
 
 /** GET /api/auth/callback/discord — OAuth callback. */
@@ -32,7 +41,9 @@ export async function GET(req: Request) {
     return redirect("/auth/signin?error=oauth_denied");
   }
 
-  const stateData = await verifyOAuthState(state);
+  const nonce = (await cookies()).get(OAUTH_COOKIE)?.value ?? "";
+  const stateData = await verifyOAuthState(state, nonce);
+  if (!stateData) return redirect("/auth/signin?error=invalid_state");
 
   let accessToken: string;
   try {

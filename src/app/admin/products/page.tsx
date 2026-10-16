@@ -1,3 +1,4 @@
+import { requireAdminPage } from "@/lib/admin-page";
 import { asc } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { prices, products } from "@/lib/db/schema";
@@ -8,6 +9,7 @@ export const metadata = { title: "Products" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminProductsPage() {
+  await requireAdminPage();
   const prods = await db.select().from(products).orderBy(asc(products.name));
   const allPrices = await db.select().from(prices);
 
