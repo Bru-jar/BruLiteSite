@@ -173,6 +173,12 @@ confirmed game launch, manual close, revocation closing the game and membership
 regrant/recheck recovery. A controlled local staging endpoint outage also caused the
 game to exit when the existing lease expired; the launcher remained running. The
 lease was expired, not explicitly revoked, and manual membership was preserved.
-The guarded local site was restarted and returned HTTP 200. Post-outage launcher
-recovery is still awaiting confirmation; explicit attach and hosted deployment remain
+The latest launcher was retested with an authorized endpoint outage starting at
+2026-10-16 23:41:35 UTC. Its lease expired at 23:44:05 UTC; the game was observed
+closed at 23:44:06 UTC while the launcher stayed open and its protected refresh
+remained present. The guarded site was restarted and returned HTTP 200. The user
+confirmed Check membership returned Licence active without another browser sign-in;
+zero active leases remained. The access credential did not expire during this live
+run; the access-expiry outage path is covered by native worker/DPAPI regression
+fixtures, not this live acceptance. Explicit attach and hosted deployment remain
 pending. The native QA ledger contains the detailed evidence and limitations.

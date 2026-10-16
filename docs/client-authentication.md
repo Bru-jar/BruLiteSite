@@ -175,6 +175,10 @@ server while a test game ran at its login screen. The game exited when its exist
 lease elapsed, while the launcher remained running and staging remained offline. The
 server lease expired naturally without explicit revocation; no active native leases
 remained, and membership was preserved. The staging site was restarted and returned
-HTTP 200. Post-outage launcher recovery awaits user confirmation. This tests a failed
+HTTP 200. The latest native build subsequently passed an authorized repeat: the
+game exited just after lease expiry, its protected refresh survived, and the user
+confirmed Check membership restored Licence active without browser sign-in. No
+new game lease was created by recovery. This run did not cross access-token expiry
+while offline; native worker/DPAPI fixtures cover that boundary. This tests a failed
 endpoint connection, not every internet failure mode or full executable integrity.
 Production and hosted Vercel configuration remain unchanged.
