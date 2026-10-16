@@ -102,8 +102,9 @@ connections, not the embedded test engine. It creates one synthetic account and 
 credentials, tests races for the final device and running-client slots, proof replay,
 concurrent refresh reuse, lease expiry and revoked membership, then removes its fixtures.
 It does not call Discord or Stripe and never displays credentials. All checks passed.
-The staging migration history contains the five expected migrations. Real browser OAuth,
-hosted deployment configuration and a compatible native launcher remain to be verified.
+The staging migration history contains the five expected migrations. Browser OAuth and
+HTTP pairing were subsequently verified as recorded below. Hosted deployment configuration
+and a compatible native launcher remain to be verified.
 
 ## Local browser staging
 
@@ -128,6 +129,36 @@ IDs were verified through read-only Discord requests on 2026-10-16. Actual Next 
 loading retained staging credentials and blocked production service fallback.
 Local HTTP checks rejected an invalid OAuth state, redirected anonymous dashboard
 access to sign-in, returned 401 for anonymous client identity, and rejected a
-cross-origin cookie mutation. Browser navigation reached Discord authorization;
-user consent and the successful callback remain to be tested. Put the staging bot
-role above Customer before testing role assignment.
+cross-origin cookie mutation. The user completed Discord sign-in and reached the dashboard.
+Read-only database and Discord checks confirmed a persisted website session, the configured
+Admin role, active manual membership, and the Customer role assigned to the test account.
+The staging bot role is now above Customer.
+
+## Browser-approved HTTP pairing acceptance
+
+Run the opt-in probe with the local staging server already running:
+
+```powershell
+node --import tsx scripts/pair-staging.ts --check
+node --import tsx scripts/pair-staging.ts
+```
+
+It generates a temporary installation key in memory and displays a pairing URL and
+matching code. Open the URL in the signed-in staging browser, compare the code and
+choose Authorize client. No browser cookie is extracted or fabricated. The probe
+expects an active manual membership and tests the real local HTTP routes backed by
+Neon. It never prints private keys, access/refresh tokens or retrieval secrets.
+
+The first browser-approved run passed: credential collection, device identity,
+live manual licence validation, rejection of an access credential without key proof,
+signed-request replay rejection, session creation/renewal, refresh rotation rejecting
+the old access credential, renewal with the new credential, session end, client
+sign-out, and rejection of the revoked credential. Credential responses used no-store.
+
+The finally block revokes only the probe's installation (scoped by its random key
+thumbprint and generated name), its access/refresh credentials and leases, then
+closes its pairing. Revoked test records remain for auditing and consume no device
+slots. The user's account, website session and manual licence are preserved. Abrupt
+process termination can interrupt cleanup; disconnect its named device in staging
+Admin > Users if necessary. This probe is not the native launcher; Windows key and
+credential storage, real launcher integration and hosted deployment remain pending.

@@ -123,7 +123,7 @@ is no public cleanup action or automatic deployment/migration in the build.
    for operational recovery, but gate desktop access during a failed rollout.
 
 Local verification: TypeScript, production build, ESLint on changed files, and isolated
-PostgreSQL/cryptographic tests. No production migration or real browser login testing has been performed. Synthetic
+PostgreSQL/cryptographic tests. No production migration has been performed. Local staging browser sign-in and browser-approved HTTP pairing have now passed; see the staging setup record. Synthetic
 credentials were issued only inside the isolated staging database and removed after testing. Full-repository lint has an existing mobile-menu set-state-in-effect
 violation unrelated to this change. This hardening is not a penetration-test certificate
 or a promise of crack-proof software.
@@ -143,3 +143,12 @@ replacement credentials, lease expiry and revoked membership. The blank staging 
 has all five migrations; synthetic verification records were removed. This strengthens
 the database concurrency evidence but does not complete the browser/launcher acceptance
 tests or verify a deployed Vercel environment. See the updated staging setup record.
+
+Local browser acceptance subsequently passed with the staging Discord application,
+test guild and isolated Neon database: the user completed OAuth and a manual membership
+grant; read-only checks confirmed the persisted session and Customer role. The
+browser-approved HTTP probe passed device-bound pairing, identity/licensing checks,
+missing-proof and replay rejection, session creation/renewal, refresh rotation and
+sign-out. Its temporary installation and credentials were revoked afterward. The
+native launcher still needs protocol 2 integration and Windows credential storage;
+this evidence does not authorize a production rollout.
