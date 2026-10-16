@@ -40,7 +40,7 @@ node --import tsx scripts/migrate-staging.ts --check
 It rejects the configured production endpoint (including pooled/unpooled aliases),
 the production app URL, reused AUTH_SECRET, and the wrong database name. Once the
 configuration is reviewed, the same command without --check applies migrations
-ONLY to the selected staging URL. This command has not been run against any server.
+ONLY to the selected staging URL. It has been run only against the isolated staging database, as recorded below.
 
 ## Hosted staging and Discord (after the first step is verified)
 
@@ -104,3 +104,30 @@ concurrent refresh reuse, lease expiry and revoked membership, then removes its 
 It does not call Discord or Stripe and never displays credentials. All checks passed.
 The staging migration history contains the five expected migrations. Real browser OAuth,
 hosted deployment configuration and a compatible native launcher remain to be verified.
+
+## Local browser staging
+
+Once the separate Discord application and test guild settings are saved in
+.env.staging.local, run:
+
+```powershell
+node --import tsx scripts/dev-staging.ts --check
+node --import tsx scripts/dev-staging.ts
+```
+
+Open http://localhost:3001/auth/signin. The helper requires a distinct Discord
+application, bot and guild configuration, verifies the isolated database and
+signing key, blanks every variable from other local environment files, and only
+passes staging authentication settings to Next. Billing, Blob storage and ticket
+integrations stay disabled even if such keys were copied into the staging file.
+It binds to loopback only. Stop with Ctrl+C. Do not use plain next dev for staging:
+Next normally falls back to .env.local for unset values.
+
+The staging application/token match, registered local callback and test guild role
+IDs were verified through read-only Discord requests on 2026-10-16. Actual Next env
+loading retained staging credentials and blocked production service fallback.
+Local HTTP checks rejected an invalid OAuth state, redirected anonymous dashboard
+access to sign-in, returned 401 for anonymous client identity, and rejected a
+cross-origin cookie mutation. Browser navigation reached Discord authorization;
+user consent and the successful callback remain to be tested. Put the staging bot
+role above Customer before testing role assignment.
