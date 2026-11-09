@@ -1,8 +1,9 @@
 import { ArrowUpRight, LockKeyhole } from "lucide-react";
+import { readInviteUrl } from "@/lib/matrix-web/auth";
 import { MatrixFrame } from "./matrix-frame";
 
 const messages = new Map([
-  ["denied", "This Discord account isn’t on the closed beta list. Try an invited account."],
+  ["not_member", "Join the Matrix Discord server, then return here and sign in with the same account."],
   ["cancelled", "Discord sign-in was cancelled. You can try again when you’re ready."],
   ["expired", "This sign-in request expired or was invalid. Start again below."],
   ["failed", "Discord sign-in couldn’t be completed. Please try again."],
@@ -22,19 +23,33 @@ function DiscordMark() {
 export default async function MatrixLanding({ searchParams }: PageProps<"/matrix">) {
   const { status } = await searchParams;
   const notice = typeof status === "string" ? messages.get(status) : undefined;
+  const inviteUrl = readInviteUrl();
+  const showJoinAction = status === "not_member" && inviteUrl;
   return (
     <MatrixFrame rain>
       <section className="matrix-hero">
         <div className="matrix-kicker"><span aria-hidden="true" /> Private access</div>
         <h1>Enter the<br /><strong>Matrix<span>.</span></strong></h1>
-        <p className="matrix-intro">Sign in with the Discord account you were invited with to enter the closed beta.</p>
+        <p className="matrix-intro">The beta is open to members of the Matrix Discord server. Sign in with Discord to enter.</p>
         {notice && <p className="matrix-notice" role="status">{notice}</p>}
-        <a className="matrix-button" href="/matrix/oauth/start">
-          <DiscordMark />
-          Sign in with Discord
-          <ArrowUpRight aria-hidden="true" size={17} />
-        </a>
-        <p className="matrix-access-note"><LockKeyhole aria-hidden="true" size={14} /> Invitation required</p>
+        <div className="matrix-actions">
+          {showJoinAction && (
+            <a className="matrix-button" href={inviteUrl} target="_blank" rel="noreferrer">
+              <DiscordMark /> Join the Discord server <ArrowUpRight aria-hidden="true" size={17} />
+            </a>
+          )}
+          <a className={showJoinAction ? "matrix-button matrix-button-quiet" : "matrix-button"} href="/matrix/oauth/start">
+            <DiscordMark /> Sign in with Discord <ArrowUpRight aria-hidden="true" size={17} />
+          </a>
+        </div>
+        {!showJoinAction && (
+          <p className="matrix-access-note">
+            <LockKeyhole aria-hidden="true" size={14} />
+            {inviteUrl ? (
+              <a href={inviteUrl} target="_blank" rel="noreferrer">Join the Discord server</a>
+            ) : "Discord server membership required"}
+          </p>
+        )}
       </section>
     </MatrixFrame>
   );

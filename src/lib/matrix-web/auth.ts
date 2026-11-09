@@ -1,6 +1,7 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { neon } from "@neondatabase/serverless";
 import type { Query } from "@/lib/matrix-auth/store";
+import { discordRequest, guildMembership, isDiscordId } from "./discord";
 
 export const landingPath = "/matrix";
 export const betaPath = "/matrix/beta";
@@ -9,21 +10,28 @@ export const sessionCookie = "__Host-matrix-web";
 export const oauthCookie = "__Host-matrix-web-oauth";
 export const sessionSeconds = 3600;
 export const oauthSeconds = 600;
-export const discord = "https://discord.com";
-
-const idPattern = /^[1-9][0-9]{16,19}$/;
 const tokenPattern = /^[A-Za-z0-9_-]{43}$/;
 export const randomToken = () => randomBytes(32).toString("base64url");
 export const hash = (value: string) => createHash("sha256").update(value).digest("base64url");
 
-export function readWebConfig(env: Readonly<Record<string, string | undefined>> = process.env) {
+type Env = Readonly<Record<string, string | undefined>>;
+
+export function readInviteUrl(env: Env = process.env) {
+  const invite = env.MATRIX_WEB_DISCORD_INVITE_URL?.trim();
+  return invite && /^https:\/\/(?:discord\.gg\/|discord\.com\/invite\/)[A-Za-z0-9_-]+\/?$/.test(invite)
+    ? invite
+    : null;
+}
+
+export function readWebConfig(env: Env = process.env) {
   const origin = env.MATRIX_WEB_ORIGIN?.trim().replace(/\/$/, "");
   const clientId = env.MATRIX_WEB_DISCORD_CLIENT_ID?.trim();
   const clientSecret = env.MATRIX_WEB_DISCORD_CLIENT_SECRET?.trim();
   const database = env.MATRIX_WEB_DATABASE_URL?.trim();
-  const ids = env.MATRIX_WEB_DISCORD_ALLOWED_USER_IDS?.split(",").map((id) => id.trim());
-  if (!origin || !clientId || !idPattern.test(clientId) || !clientSecret ||
-      !database || !ids?.every((id) => idPattern.test(id))) return null;
+  const guildId = env.MATRIX_WEB_DISCORD_GUILD_ID?.trim();
+  const botToken = env.MATRIX_WEB_DISCORD_BOT_TOKEN?.trim();
+  if (!origin || !isDiscordId(clientId) || !clientSecret || !database ||
+      !isDiscordId(guildId) || !botToken || !readInviteUrl(env)) return null;
   try {
     const url = new URL(origin);
     if (origin !== url.origin || (url.protocol !== "https:" &&
@@ -31,7 +39,7 @@ export function readWebConfig(env: Readonly<Record<string, string | undefined>> 
   } catch {
     return null;
   }
-  return { origin, clientId, clientSecret, database, allowedUserIds: new Set(ids) };
+  return { origin, clientId, clientSecret, database, guildId, botToken };
 }
 
 export type WebConfig = NonNullable<ReturnType<typeof readWebConfig>>;
@@ -72,9 +80,7 @@ export function webSessions(config: WebConfig, query?: Query) {
          WHERE token_hash = $1 AND origin = $2 AND expires_at > now()`,
         [hash(token), config.origin],
       );
-      // Apply current eligibility on every request, including already-issued sessions.
-      if (typeof row?.discord_id !== "string" || !config.allowedUserIds.has(row.discord_id) ||
-          typeof row.display_name !== "string") return null;
+      if (!isDiscordId(row?.discord_id) || typeof row.display_name !== "string") return null;
       return { discordId: row.discord_id, displayName: row.display_name };
     },
     async revoke(token: string | undefined) {
@@ -83,4 +89,21 @@ export function webSessions(config: WebConfig, query?: Query) {
         [hash(token), config.origin]);
     },
   };
+}
+
+export async function readBetaAccess(
+  config: WebConfig,
+  token: string,
+  sessions = webSessions(config),
+  request = discordRequest,
+) {
+  try {
+    const session = await sessions.read(token);
+    if (!session) return { status: "signed_out" } as const;
+    const status = await guildMembership(config, session.discordId, request);
+    if (status !== "member") return { status } as const;
+    return { status, session } as const;
+  } catch {
+    return { status: "unavailable" } as const;
+  }
 }

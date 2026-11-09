@@ -125,6 +125,12 @@
   overflow-wrap: anywhere;
 }
 
+.matrix-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
 .matrix-button {
   display: inline-flex;
   align-items: center;
@@ -169,6 +175,11 @@
   margin: 1rem 0 0;
   color: var(--matrix-muted);
   font: .78rem/1.45 var(--matrix-mono);
+}
+
+.matrix-access-note a {
+  color: inherit;
+  text-underline-offset: .2em;
 }
 
 .matrix-notice {

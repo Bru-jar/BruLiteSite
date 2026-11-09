@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import {
-  betaPath, callbackPath, discord, hash, landingPath, oauthCookie, oauthSeconds,
+  betaPath, callbackPath, hash, landingPath, oauthCookie, oauthSeconds,
   randomToken, sessionCookie, sessionSeconds, stateFor, verifyAttempt, webSessions, type WebConfig,
 } from "./auth";
+import { discord, discordRequest, guildMembership, isDiscordId } from "./discord";
 
 const headers = { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" };
 
@@ -37,19 +38,11 @@ export function startOAuth(request: NextRequest, config: WebConfig | null) {
   return response;
 }
 
-async function discordJson(url: string, options: RequestInit): Promise<Record<string, unknown>> {
-  const response = await fetch(discord + "/api/v10" + url, {
-    ...options, cache: "no-store", redirect: "error", signal: AbortSignal.timeout(8000),
-  });
-  if (!response.ok) throw new Error("Discord request failed");
-  return response.json();
-}
-
 export async function finishOAuth(
   request: NextRequest,
   config: WebConfig | null,
   sessions = config ? webSessions(config) : null,
-  getDiscordJson = discordJson,
+  requestDiscord = discordRequest,
 ) {
   function complete(destination: string, token?: string) {
     const response = redirect(destination);
@@ -73,7 +66,7 @@ export async function finishOAuth(
     return complete(landingPath + "?status=failed");
   }
   try {
-    const token = await getDiscordJson("/oauth2/token", {
+    const tokenResponse = await requestDiscord("/oauth2/token", {
       method: "POST",
       body: new URLSearchParams({
         client_id: config.clientId,
@@ -84,16 +77,20 @@ export async function finishOAuth(
         code_verifier: verifier,
       }),
     });
+    if (!tokenResponse.ok) return complete(landingPath + "?status=failed");
+    const token = await tokenResponse.json();
     if (typeof token?.access_token !== "string" || !/^[!-~]{1,2048}$/.test(token.access_token) ||
         String(token.token_type).toLowerCase() !== "bearer" || token.scope !== "identify") {
       return complete(landingPath + "?status=failed");
     }
-    const identity = await getDiscordJson("/users/@me", {
+    const identityResponse = await requestDiscord("/users/@me", {
       headers: { Authorization: "Bearer " + token.access_token },
     });
-    if (typeof identity?.id !== "string" || !config.allowedUserIds.has(identity.id)) {
-      return complete(landingPath + "?status=denied");
-    }
+    if (!identityResponse.ok) return complete(landingPath + "?status=failed");
+    const identity = await identityResponse.json();
+    if (!isDiscordId(identity?.id)) return complete(landingPath + "?status=failed");
+    const membership = await guildMembership(config, identity.id, requestDiscord);
+    if (membership !== "member") return complete(landingPath + "?status=" + membership);
     const name = [identity.global_name, identity.username]
       .find((value): value is string => typeof value === "string" && value.trim().length > 0);
     return complete(betaPath, await sessions.create(identity.id, name?.trim().slice(0, 100) ?? "Discord user"));
