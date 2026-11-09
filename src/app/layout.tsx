@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "./matrix.css";
-import { SiteNav } from "@/components/nav";
+import { CodeRain } from "@/components/code-rain";
 import { SiteFooter } from "@/components/footer";
 
 const geistSans = Geist({
@@ -17,11 +17,12 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Matrix — Old School RuneScape Client",
+    default: "Matrix — Mobile Assistance for Old School RuneScape",
     template: "%s — Matrix",
   },
   description:
-    "Matrix is a third-party Old School RuneScape client. Explore plugins, manage your membership, and sign in with Discord to join the beta.",
+    "Matrix is a mobile assistance tool for Old School RuneScape. Join the Matrix Discord for launch updates.",
+  robots: { index: false, follow: false },
   referrer: "same-origin",
 };
 
@@ -31,9 +32,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
-        <SiteNav />
-        <main className="flex-1">{children}</main>
+      <body className="relative isolate min-h-full flex flex-col bg-background text-foreground">
+        <CodeRain />
+        {children}
         <SiteFooter />
       </body>
     </html>

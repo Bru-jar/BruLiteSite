@@ -1,6 +1,6 @@
 # Matrix website closed beta
 
-The public landing is at `/`. Any member of the configured Discord server can sign in. The server checks the browser session and current Discord membership before rendering `/beta`. Visitors outside the server see an invite and can return to sign in after joining. The Matrix site keeps the existing catalog, membership, support, and admin URLs. The beta uses its own Discord membership check. Old links to `/matrix` and `/matrix/beta` redirect to the new pages. The installed Matrix launcher still uses `/api/matrix/auth/*`.
+The public coming-soon page is at `/`. Beta testers can go directly to `/beta`, which starts Discord sign-in for signed-out visitors. The server checks the browser session and current Discord membership before rendering the beta. Visitors outside the server see an invite and can return to sign in after joining. Old links to `/matrix` and `/matrix/beta` redirect to the new pages. The installed Matrix launcher still uses `/api/matrix/auth/*`.
 
 ## Preview setup
 
@@ -19,6 +19,6 @@ The public landing is at `/`. Any member of the configured Discord server can si
    | `MATRIX_WEB_DATABASE_URL` | Isolated Neon connection string, stored as a sensitive variable |
 
 4. Add `<MATRIX_WEB_ORIGIN>/matrix/oauth/callback` as an exact redirect URI on the chosen Discord app. Keep the existing `https://brulitesite.vercel.app/api/matrix/auth/callback` registration for the launcher.
-5. Open `/` on the preview. Direct signed-out navigation to `/beta` should return to the landing. Verify a regular server member can sign in and a non-member sees the invite. After joining the server, the same account should be able to sign in. Verify that leaving the server denies access on the next protected request and sign-out revokes the browser session. Check the launcher health on its existing origin separately.
+5. Open `/beta` on the preview. Signed-out navigation should start Discord sign-in. Verify a regular server member can sign in and a non-member sees the invite. After joining the server, the same account should be able to sign in. Verify that leaving the server denies access on the next protected request and sign-out revokes the browser session. Check the launcher health on its existing origin separately.
 
 For a visual preview without OAuth configuration, run `npm run dev` and visit `http://localhost:3000`. Configured OAuth uses Discord’s [authorization code flow](https://docs.discord.com/developers/topics/oauth2#authorization-code-grant) with PKCE and the `identify` scope. Matrix checks [guild membership](https://docs.discord.com/developers/resources/guild#get-guild-member) on sign-in and every protected request. A lookup failure denies access. The site uses host-only, HTTP-only cookies and stores hashed web session credentials for one hour. Expired rows are removed when new sessions are created. The site discards Discord access and refresh tokens after checking identity.

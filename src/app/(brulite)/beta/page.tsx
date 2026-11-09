@@ -3,17 +3,18 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ArrowUpRight, Check, LogOut } from "lucide-react";
 import { Button, Card } from "@/components/ui";
-import { landingPath, readBetaAccess, readWebConfig, sessionCookie, signOutPath } from "@/lib/matrix-web/auth";
+import { landingPath, readBetaAccess, readWebConfig, sessionCookie, signOutPath, startPath } from "@/lib/matrix-web/auth";
 
 export const metadata = { title: "Beta workspace", robots: { index: false, follow: false } };
 
 export default async function MatrixBeta() {
   const config = readWebConfig();
   const token = (await cookies()).get(sessionCookie)?.value;
-  if (!config || !token) redirect(landingPath);
+  if (!config) redirect(landingPath);
+  if (!token) redirect(startPath);
 
   const access = await readBetaAccess(config, token);
-  if (access.status === "signed_out") redirect(landingPath);
+  if (access.status === "signed_out") redirect(startPath);
   if (access.status !== "member") redirect(landingPath + "?status=" + access.status);
 
   return (

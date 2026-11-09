@@ -19,7 +19,6 @@ export async function SiteNav() {
   const session = await getSession();
 
   const links: NavLink[] = [
-    { href: "/plugins", label: "Plugins" },
     { href: "/pricing", label: "Pricing" },
     { href: "/faq", label: "FAQ" },
     ...(session
