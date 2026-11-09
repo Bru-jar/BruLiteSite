@@ -16,7 +16,7 @@ export function Button({
 }) {
   const styles = {
     primary:
-      "bg-gradient-to-b from-primary-bright to-primary text-white shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:brightness-110",
+      "bg-gradient-to-b from-primary-bright to-primary text-background shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:brightness-110",
     secondary:
       "bg-surface-2/80 border border-white/10 text-foreground hover:border-primary/50 hover:bg-surface-2",
     ghost: "text-muted hover:text-foreground hover:bg-surface-2",
@@ -118,7 +118,7 @@ export function Badge({
   children,
 }: {
   className?: string;
-  tone?: "default" | "green" | "red" | "yellow" | "purple";
+  tone?: "default" | "green" | "red" | "yellow" | "accent";
   children: ReactNode;
 }) {
   const tones = {
@@ -126,7 +126,7 @@ export function Badge({
     green: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
     red: "bg-red-500/15 text-red-300 border-red-500/30",
     yellow: "bg-amber-500/15 text-amber-300 border-amber-500/30",
-    purple: "bg-primary/15 text-accent border-primary/40",
+    accent: "bg-primary/15 text-accent border-primary/40",
   }[tone];
   return (
     <span

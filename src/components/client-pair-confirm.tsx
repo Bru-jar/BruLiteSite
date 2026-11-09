@@ -24,7 +24,7 @@ export function ClientPairConfirm({ code }: { code: string }) {
   if (state === "done") {
     return (
       <p className="mt-6 rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-300">
-        Client linked — you can close this tab and return to BruLite.
+        Client linked — you can close this tab and return to Matrix.
       </p>
     );
   }

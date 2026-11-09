@@ -9,11 +9,12 @@ import type { NavLink } from "@/components/nav-links";
 
 /** Hamburger + slide-down panel for mobile nav. */
 export function MobileMenu({ links }: { links: NavLink[] }) {
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  return <MenuPanel key={pathname} links={links} pathname={pathname} />;
+}
 
-  // Close on navigation + Escape.
-  useEffect(() => setOpen(false), [pathname]);
+function MenuPanel({ links, pathname }: { links: NavLink[]; pathname: string }) {
+  const [open, setOpen] = useState(false);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     window.addEventListener("keydown", onKey);
@@ -38,6 +39,7 @@ export function MobileMenu({ links }: { links: NavLink[] }) {
               <Link
                 key={l.href}
                 href={l.href}
+                onClick={() => setOpen(false)}
                 className={cn(
                   "rounded-lg px-3 py-2.5 text-sm transition-colors",
                   pathname === l.href

@@ -46,7 +46,7 @@ export default async function AdminTicketsPage() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <Badge tone={t.type === "bug" ? "red" : "purple"}>
+                    <Badge tone={t.type === "bug" ? "red" : "accent"}>
                       {t.type}
                     </Badge>
                     <h3 className="font-semibold">{t.title}</h3>

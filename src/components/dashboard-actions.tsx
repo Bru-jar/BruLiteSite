@@ -52,7 +52,7 @@ export function RevokeTokenButton({ tokenId }: { tokenId: string }) {
 export function NewTokenButton() {
   return (
     <p className="text-sm text-muted">
-      To connect a device, open BruLite and choose Sign in. Approve the matching
+      To connect a device, open Matrix and choose Sign in. Approve the matching
       code in your browser.
     </p>
   );

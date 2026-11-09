@@ -152,7 +152,7 @@ export function ProductManager({ products }: { products: ProductWithPrices[] }) 
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{p.name}</span>
-                  <Badge tone="purple">{p.category}</Badge>
+                  <Badge tone="accent">{p.category}</Badge>
                   {!p.active && <Badge>inactive</Badge>}
                 </div>
                 <ul className="mt-2 space-y-1 text-sm text-muted">

@@ -116,7 +116,7 @@ export function ReleaseManager({ releases }: { releases: ReleaseRow[] }) {
               ref={fileRef}
               type="file"
               required
-              className="w-full text-sm text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:text-white"
+              className="w-full text-sm text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:text-background"
             />
           </div>
           <div>

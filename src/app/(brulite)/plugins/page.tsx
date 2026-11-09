@@ -32,7 +32,7 @@ export default async function PluginsPage({
       <PageHeader
         eyebrow="Showcase"
         title="Plugin showcase"
-        subtitle="Every plugin ships with BruLite membership."
+        subtitle="Every plugin ships with Matrix membership."
       />
 
       {categories.length > 1 && (
@@ -90,7 +90,7 @@ export default async function PluginsPage({
                 <div className="flex flex-1 flex-col p-5">
                   <div className="flex items-start justify-between gap-3">
                     <h3 className="font-semibold">{p.name}</h3>
-                    <Badge tone="purple">{p.category}</Badge>
+                    <Badge tone="accent">{p.category}</Badge>
                   </div>
                   <p className="mt-2 flex-1 text-sm text-muted">
                     {p.description}

@@ -7,7 +7,7 @@ const ERRORS: Record<string, string> = {
   oauth_denied: "Discord sign-in was cancelled.",
   oauth_failed: "Discord sign-in failed — please try again.",
   guild_required:
-    "We couldn't add you to the BruLite Discord server. Please try again or join manually first.",
+    "We couldn't add you to the Discord server for your account. Please try again or join manually first.",
 };
 
 export default async function SignInPage({
@@ -26,16 +26,16 @@ export default async function SignInPage({
       <div className="pointer-events-none absolute -top-10 left-1/2 h-56 w-[28rem] -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
       <div className="gradient-border relative w-full rounded-2xl bg-surface/70 p-8 text-center backdrop-blur-sm">
         <Image
-          src="/logo.png"
-          alt="BruLite"
+          src="/matrix-mark.svg"
+          alt=""
           width={64}
           height={64}
           className="mx-auto rounded-xl ring-1 ring-white/15"
+          unoptimized
         />
-        <h1 className="mt-5 text-xl font-bold">Sign in to BruLite</h1>
+        <h1 className="mt-5 text-xl font-bold">Sign in to your Matrix account</h1>
         <p className="mt-2 text-sm text-muted">
-          We use your Discord account — you&apos;ll join the BruLite server
-          automatically.
+          Use Discord to manage your membership, linked devices, and support tickets.
         </p>
         {message && (
           <p className="mt-4 rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">
@@ -44,7 +44,7 @@ export default async function SignInPage({
         )}
         <a
           href={href}
-          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-b from-primary-bright to-primary px-4 py-2.5 font-medium text-white shadow-lg shadow-primary/30 transition-all hover:brightness-110 active:scale-[0.98]"
+          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-b from-primary-bright to-primary px-4 py-2.5 font-medium text-background shadow-lg shadow-primary/30 transition-all hover:brightness-110 active:scale-[0.98]"
         >
           <DiscordMark className="h-5 w-5" />
           Continue with Discord

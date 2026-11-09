@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #07040d;
-  --surface: #0f0a1c;
-  --surface-2: #18102c;
-  --border: #2a1c4a;
-  --foreground: #f2eefb;
-  --muted: #9a8cc2;
-  --primary: #8b5cf6;
-  --primary-bright: #a855f7;
-  --accent: #c084fc;
-  --glow: rgba(139, 92, 246, 0.35);
+  color-scheme: dark;
+  --background: #050b08;
+  --surface: #0c1711;
+  --surface-2: #14241b;
+  --border: #2a4436;
+  --foreground: #ecf7ef;
+  --muted: #a3b8aa;
+  --primary: #65dd9a;
+  --primary-bright: #9cf6c0;
+  --accent: #80f5ad;
 }
 
 @theme inline {
@@ -29,22 +29,31 @@
 
 body {
   background:
-    radial-gradient(1000px 500px at 50% -10%, rgba(139, 92, 246, 0.16), transparent 65%),
-    radial-gradient(800px 400px at 90% 40%, rgba(168, 85, 247, 0.07), transparent 60%),
-    radial-gradient(700px 500px at 5% 90%, rgba(139, 92, 246, 0.08), transparent 60%),
+    radial-gradient(900px 500px at 50% -10%, #4cdd9120, transparent 70%),
+    radial-gradient(700px 400px at 95% 56%, #2a9a6011, transparent 70%),
     var(--background);
   background-attachment: fixed;
   color: var(--foreground);
 }
 
 ::selection {
-  background: rgba(139, 92, 246, 0.35);
+  background: #65dd9a45;
+}
+
+.site-container {
+  width: min(100% - clamp(2.5rem, 8vw, 8rem), 78rem);
+  margin-inline: auto;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
 }
 
 /* ---------- utilities ---------- */
 
 .text-gradient {
-  background: linear-gradient(100deg, var(--primary-bright), var(--accent) 60%, #e9d5ff);
+  background: linear-gradient(100deg, var(--primary-bright), var(--accent) 60%, #dcffe7);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -60,7 +69,7 @@ body {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(160deg, rgba(168, 85, 247, 0.55), rgba(139, 92, 246, 0.12) 45%, rgba(192, 132, 252, 0.35));
+  background: linear-gradient(160deg, #80f5ad80, #65dd9a1f 45%, #65dd9a50);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -70,7 +79,7 @@ body {
 
 /* Faint dotted grid backdrop for hero */
 .bg-grid {
-  background-image: radial-gradient(rgba(168, 85, 247, 0.16) 1px, transparent 1px);
+  background-image: radial-gradient(#80f5ad29 1px, transparent 1px);
   background-size: 26px 26px;
   mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
   -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { MatrixBrand } from "@/components/nav";
 
 const groups = [
   {
@@ -8,6 +8,7 @@ const groups = [
       { href: "/plugins", label: "Plugins" },
       { href: "/pricing", label: "Pricing" },
       { href: "/faq", label: "FAQ" },
+      { href: "/beta", label: "Beta access" },
     ],
   },
   {
@@ -29,21 +30,10 @@ const groups = [
 export function SiteFooter() {
   return (
     <footer className="border-t border-white/8">
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <div className="site-container py-12">
         <div className="grid gap-10 sm:grid-cols-[1.5fr_repeat(3,1fr)]">
           <div>
-            <Link href="/" className="flex items-center gap-2.5">
-              <Image
-                src="/logo.png"
-                alt="BruLite"
-                width={28}
-                height={28}
-                className="rounded-md"
-              />
-              <span className="font-bold tracking-tight">
-                Bru<span className="text-gradient">Lite</span>
-              </span>
-            </Link>
+            <MatrixBrand />
             <p className="mt-3 max-w-xs text-sm text-muted">
               A fast, plugin-powered client for Old School RuneScape. Not
               affiliated with Jagex Ltd.
@@ -59,6 +49,7 @@ export function SiteFooter() {
                   <li key={l.href}>
                     <Link
                       href={l.href}
+                      prefetch={l.href === "/beta" ? false : undefined}
                       className="text-sm text-muted transition-colors hover:text-foreground"
                     >
                       {l.label}
@@ -70,7 +61,7 @@ export function SiteFooter() {
           ))}
         </div>
         <div className="mt-10 border-t border-white/5 pt-6 text-sm text-muted">
-          © {new Date().getFullYear()} BruLite. All rights reserved.
+          © {new Date().getFullYear()} Matrix. All rights reserved.
         </div>
       </div>
     </footer>

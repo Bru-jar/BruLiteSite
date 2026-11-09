@@ -10,12 +10,12 @@ export const dynamic = "force-dynamic";
 
 const faqs = [
   {
-    q: "How do I get access to BruLite?",
+    q: "How do I get access to Matrix?",
     a: "Sign in with your Discord account (you'll automatically join our server), pick a membership on the Pricing page, and download the client from your Dashboard.",
   },
   {
     q: "How does the client verify my membership?",
-    a: "When you launch BruLite it opens your browser to link with your Discord account. The client receives a short-lived token and checks your membership against our API — the Discord role alone doesn't grant access.",
+    a: "When you launch Matrix it opens your browser to link with your Discord account. The client receives a short-lived token and checks your membership against our API — the Discord role alone doesn't grant access.",
   },
   {
     q: "Can I cancel my subscription?",
@@ -30,8 +30,8 @@ const faqs = [
     a: "Once you've received access, purchases are generally non-refundable except where required by law or authorised by staff. See the Terms of Service for full details including digital-content rights.",
   },
   {
-    q: "Is BruLite affiliated with Jagex?",
-    a: "No. BruLite is a third-party client and is not affiliated with or endorsed by Jagex Ltd. Use of third-party clients is at your own risk.",
+    q: "Is Matrix affiliated with Jagex?",
+    a: "No. Matrix is a third-party client and is not affiliated with or endorsed by Jagex Ltd. Use of third-party clients is at your own risk.",
   },
   {
     q: "Where do I report a bug or request a feature?",
@@ -63,7 +63,7 @@ export default async function FaqPage() {
           </p>
           <Link
             href={session ? "/support" : "/api/auth/discord?next=/support"}
-            className="mt-2 inline-flex items-center gap-2 rounded-lg bg-gradient-to-b from-primary-bright to-primary px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-primary/30 transition-all hover:brightness-110"
+            className="mt-2 inline-flex items-center gap-2 rounded-lg bg-gradient-to-b from-primary-bright to-primary px-5 py-2.5 text-sm font-medium text-background shadow-lg shadow-primary/30 transition-all hover:brightness-110"
           >
             {session ? "Go to Support" : "Sign in to open a ticket"}{" "}
             <ArrowRight className="h-4 w-4" />

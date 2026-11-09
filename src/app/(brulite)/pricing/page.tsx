@@ -25,6 +25,12 @@ export default async function PricingPage() {
     .where(eq(prices.active, true))
     .orderBy(asc(prices.amountUsdCents));
 
+  const displayPrices = rows.map((price) => ({
+    ...price,
+    productName: price.productName.replace(/\bBruLite\b/gi, "Matrix"),
+    description: price.description?.replace(/\bBruLite\b/gi, "Matrix") ?? null,
+  }));
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
       <PageHeader
@@ -33,7 +39,7 @@ export default async function PricingPage() {
         title="One membership, everything included"
         subtitle="The full client, every plugin, and your Discord role — monthly or yearly."
       />
-      <PricingCards prices={rows} signedIn={!!session} />
+      <PricingCards prices={displayPrices} signedIn={!!session} />
       <p className="mt-8 text-center text-sm text-muted">
         Prices in USD. Cancel anytime — access continues until the end of your
         paid period. See our{" "}

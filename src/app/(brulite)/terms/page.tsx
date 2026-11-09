@@ -20,8 +20,8 @@ export default function TermsPage() {
             1. The service
           </h2>
           <p>
-            BruLite provides access to a third-party client for Old School
-            RuneScape and related plugins (&quot;the Software&quot;). BruLite
+            Matrix provides access to a third-party client for Old School
+            RuneScape and related plugins (&quot;the Software&quot;). Matrix
             is not affiliated with or endorsed by Jagex Ltd. A paid membership
             grants you a non-exclusive, non-transferable, revocable licence to
             use the Software for personal use while your membership is active.
@@ -32,7 +32,7 @@ export default function TermsPage() {
             2. Accounts &amp; Discord
           </h2>
           <p>
-            Access requires a Discord account and membership of the BruLite
+            Access requires a Discord account and membership of the Matrix
             Discord server. You are responsible for your Discord account. We
             may suspend or terminate access for breach of these terms, abuse of
             the Software, or fraud.
@@ -57,7 +57,7 @@ export default function TermsPage() {
             Once access has been delivered to your account, purchases are
             non-refundable except where required by applicable consumer law
             (including UK/EU digital-content rights) or where manually
-            authorised by BruLite staff. Filing a chargeback or payment
+            authorised by Matrix staff. Filing a chargeback or payment
             dispute results in immediate suspension of access while the
             dispute is resolved.
           </p>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "../globals.css";
+import "./globals.css";
+import "./matrix.css";
 import { SiteNav } from "@/components/nav";
 import { SiteFooter } from "@/components/footer";
 
@@ -16,11 +17,12 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "BruLite — OSRS Client",
-    template: "%s — BruLite",
+    default: "Matrix — Old School RuneScape Client",
+    template: "%s — Matrix",
   },
   description:
-    "BruLite is a custom Old School RuneScape client with powerful plugins. Log in with Discord, manage your membership, and get support.",
+    "Matrix is a third-party Old School RuneScape client. Explore plugins, manage your membership, and sign in with Discord to join the beta.",
+  referrer: "same-origin",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

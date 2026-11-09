@@ -33,7 +33,7 @@ beforeAll(async () => {
 afterAll(() => pg.close());
 
 function start() {
-  const response = startOAuth(new NextRequest(config.origin + "/matrix/oauth/start"), config);
+  const response = startOAuth(new NextRequest(config.origin + "/auth/matrix/start"), config);
   expect(response.status).toBe(303);
   const authorize = new URL(response.headers.get("location")!);
   expect(authorize.origin).toBe(discord);
@@ -90,8 +90,8 @@ test("requires a Matrix web guild, bot, and valid Discord invite", () => {
   expect(readInviteUrl({ ...env, MATRIX_WEB_DISCORD_INVITE_URL: "https://discord.com/invite/matrix" }))
     .toBe("https://discord.com/invite/matrix");
   expect(readWebConfig({ ...env, MATRIX_WEB_ORIGIN: "http://example.com" })).toBeNull();
-  expect(startOAuth(new NextRequest(config.origin + "/matrix/oauth/start"), null)
-    .headers.get("location")).toBe("/matrix?status=unavailable");
+  expect(startOAuth(new NextRequest(config.origin + "/auth/matrix/start"), null)
+    .headers.get("location")).toBe("/?status=unavailable");
 });
 
 test("rejects mismatched, missing, expired, and wrong-issuer callbacks before contacting Discord", async () => {
@@ -108,7 +108,7 @@ test("rejects mismatched, missing, expired, and wrong-issuer callbacks before co
     requests.push(callback(attempt.state, attempt.cookie));
     for (const request of requests) {
       const response = await finishOAuth(request, config, sessions(), getDiscord);
-      expect(response.headers.get("location")).toBe("/matrix?status=expired");
+      expect(response.headers.get("location")).toBe("/?status=expired");
     }
   } finally {
     vi.restoreAllMocks();
@@ -121,7 +121,7 @@ test("a non-member is prompted to join and can sign in once they join", async ()
   const getDiscord = provider(nonMember, challenge, Response.json({ code: 10007 }, { status: 404 }));
   const response = await finishOAuth(callback(state, cookie), config, sessions(), getDiscord);
   expect(getDiscord).toHaveBeenCalledTimes(3);
-  expect(response.headers.get("location")).toBe("/matrix?status=not_member");
+  expect(response.headers.get("location")).toBe("/?status=not_member");
   expect(response.cookies.has(sessionCookie)).toBe(false);
 
   const retry = start();
@@ -136,7 +136,7 @@ test.each([[404, 10004], [403, 50001], [429, 0], [503, 0]])(
     const { state, cookie, challenge } = start();
     const getDiscord = provider(member, challenge, Response.json({ code }, { status }));
     const response = await finishOAuth(callback(state, cookie), config, sessions(), getDiscord);
-    expect(response.headers.get("location")).toBe("/matrix?status=unavailable");
+    expect(response.headers.get("location")).toBe("/?status=unavailable");
     expect(response.cookies.has(sessionCookie)).toBe(false);
   },
 );
@@ -160,13 +160,13 @@ test("regular members gain access, membership is rechecked, and sign-out revokes
   expect((await pg.query("SELECT 1 FROM matrix_auth.sessions WHERE token_hash = $1", [hash(token)])).rows)
     .toHaveLength(0);
 
-  const logout = (origin: string) => new NextRequest(config.origin + "/matrix/signout", {
+  const logout = (origin: string) => new NextRequest(config.origin + "/auth/matrix/signout", {
     method: "POST", headers: { Origin: origin, Cookie: sessionCookie + "=" + token },
   });
   expect((await signOut(logout("https://wrong.example"), config, sessions())).status).toBe(403);
   expect(await sessions().read(token)).not.toBeNull();
   const signedOut = await signOut(logout(config.origin), config, sessions());
-  expect(signedOut.headers.get("location")).toBe("/matrix?status=signed_out");
+  expect(signedOut.headers.get("location")).toBe("/?status=signed_out");
   expect(signedOut.cookies.get(sessionCookie)?.maxAge).toBe(0);
   expect(await sessions().read(token)).toBeNull();
 });

@@ -4,6 +4,16 @@ import { getSession, avatarUrl } from "@/lib/auth";
 import { SignOutButton } from "@/components/sign-out-button";
 import { NavLinks, type NavLink } from "@/components/nav-links";
 import { MobileMenu } from "@/components/mobile-menu";
+import { ArrowUpRight } from "lucide-react";
+
+export function MatrixBrand() {
+  return (
+    <Link href="/" className="inline-flex w-fit items-center gap-2.5">
+      <Image src="/matrix-mark.svg" alt="" width={34} height={34} unoptimized />
+      <span className="text-sm font-bold tracking-[.2em]">MATRIX</span>
+    </Link>
+  );
+}
 
 export async function SiteNav() {
   const session = await getSession();
@@ -20,24 +30,13 @@ export async function SiteNav() {
             : []),
           { href: "/dashboard", label: "Dashboard" },
         ]
-      : []),
+      : [{ href: "/auth/signin", label: "Account" }]),
   ];
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/8 bg-background/70 backdrop-blur-xl">
-      <nav className="relative mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2.5">
-          <Image
-            src="/logo.png"
-            alt="BruLite"
-            width={34}
-            height={34}
-            className="rounded-lg"
-          />
-          <span className="text-lg font-bold tracking-tight">
-            Bru<span className="text-gradient">Lite</span>
-          </span>
-        </Link>
+      <nav className="site-container relative flex h-16 items-center justify-between gap-3">
+        <MatrixBrand />
 
         <div className="hidden items-center gap-7 md:flex">
           <NavLinks links={links} />
@@ -56,15 +55,10 @@ export async function SiteNav() {
               />
               <SignOutButton />
             </div>
-          ) : (
-            <Link
-              href="/api/auth/discord"
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-b from-primary-bright to-primary px-4 py-2 text-sm font-medium text-white shadow-lg shadow-primary/30 transition-all hover:brightness-110 active:scale-[0.98]"
-            >
-              <DiscordMark className="h-4 w-4" />
-              Sign in
-            </Link>
-          )}
+          ) : null}
+          <Link href="/beta" prefetch={false} className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-2.5 py-1.5 text-xs font-semibold text-accent transition-colors hover:bg-primary/20 sm:px-3">
+            Beta access <ArrowUpRight className="size-3.5" aria-hidden="true" />
+          </Link>
           <MobileMenu links={links} />
         </div>
       </nav>

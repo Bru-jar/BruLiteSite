@@ -10,8 +10,8 @@ import { redirect } from "next/navigation";
 export const metadata = { title: "Support" };
 export const dynamic = "force-dynamic";
 
-const STATUS_TONE: Record<string, "default" | "green" | "yellow" | "purple"> = {
-  open: "purple",
+const STATUS_TONE: Record<string, "default" | "green" | "yellow" | "accent"> = {
+  open: "accent",
   in_progress: "yellow",
   resolved: "green",
   closed: "default",

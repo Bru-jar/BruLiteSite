@@ -36,7 +36,7 @@ export default async function TicketPage({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-xl font-bold">{ticket.title}</h1>
           <div className="flex gap-2">
-            <Badge tone="purple">{ticket.type}</Badge>
+            <Badge tone="accent">{ticket.type}</Badge>
             <Badge>{ticket.status.replace("_", " ")}</Badge>
           </div>
         </div>
@@ -77,7 +77,7 @@ export default async function TicketPage({
         )}
         {ticket.discordMessageId && (
           <p className="mt-6 border-t border-border pt-4 text-xs text-muted">
-            This ticket has a thread on the BruLite Discord — add evidence or
+            This ticket has a thread on the community Discord — add evidence or
             follow the discussion there.
             <a
               href={`https://discord.com/channels/${env.DISCORD_GUILD_ID}/${ticket.discordMessageId}`}

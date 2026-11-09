@@ -170,7 +170,7 @@ export default async function DashboardPage({
             {!ent.entitled && (
               <Link
                 href="/pricing"
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-bright"
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-background hover:bg-primary-bright"
               >
                 View plans
               </Link>
@@ -192,7 +192,7 @@ export default async function DashboardPage({
                   {winRelease && (
                     <a
                       href="/api/download/client?platform=windows-x64"
-                      className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-bright"
+                      className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-background hover:bg-primary-bright"
                     >
                       <Download className="h-4 w-4" /> Windows (v
                       {winRelease.version})
@@ -201,7 +201,7 @@ export default async function DashboardPage({
                   {macRelease && (
                     <a
                       href="/api/download/client?platform=macos-arm64"
-                      className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-bright"
+                      className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-background hover:bg-primary-bright"
                     >
                       <Download className="h-4 w-4" /> macOS Apple Silicon (v
                       {macRelease.version})
@@ -235,7 +235,7 @@ export default async function DashboardPage({
           </p>
           {devices.length === 0 ? (
             <p className="text-sm text-muted">
-              No linked devices. Sign in from inside BruLite to connect this
+              No linked devices. Sign in from inside Matrix to connect this
               computer.
             </p>
           ) : (

@@ -147,7 +147,7 @@ export function PluginManager({ plugins }: { plugins: PluginRow[] }) {
               ref={fileRef}
               type="file"
               accept="image/png,image/jpeg,image/webp,image/gif"
-              className="w-full text-sm text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:text-white"
+              className="w-full text-sm text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:text-background"
             />
             {imageUrl && (
               <p className="mt-1 truncate text-xs text-muted">
@@ -189,7 +189,7 @@ export function PluginManager({ plugins }: { plugins: PluginRow[] }) {
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-medium">{p.name}</span>
-                <Badge tone="purple">{p.category}</Badge>
+                <Badge tone="accent">{p.category}</Badge>
                 {!p.published && <Badge>hidden</Badge>}
               </div>
               <p className="mt-1 line-clamp-2 text-sm text-muted">

@@ -3,7 +3,7 @@ import { getSession } from "@/lib/auth";
 import { ClientPairConfirm } from "@/components/client-pair-confirm";
 import { redirect } from "next/navigation";
 
-export const metadata = { title: "Link BruLite client" };
+export const metadata = { title: "Link Matrix client" };
 
 export default async function ClientAuthPage({
   searchParams,
@@ -15,7 +15,7 @@ export default async function ClientAuthPage({
     return (
       <div className="mx-auto max-w-md px-4 py-24 sm:px-6">
         <Card className="text-center text-muted">
-          Missing pairing code — start the sign-in from inside the BruLite
+          Missing pairing code — start the sign-in from inside the Matrix
           client.
         </Card>
       </div>
@@ -29,7 +29,7 @@ export default async function ClientAuthPage({
   return (
     <div className="mx-auto max-w-md px-4 py-24 sm:px-6">
       <Card className="text-center">
-        <h1 className="text-xl font-bold">Link your BruLite client</h1>
+        <h1 className="text-xl font-bold">Link your Matrix client</h1>
         <p className="mt-2 text-sm text-muted">
           Authorize this device to sign in as{" "}
           <span className="font-medium text-foreground">{session.username}</span>.

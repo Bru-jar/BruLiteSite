@@ -3,8 +3,10 @@ import { neon } from "@neondatabase/serverless";
 import type { Query } from "@/lib/matrix-auth/store";
 import { discordRequest, guildMembership, isDiscordId } from "./discord";
 
-export const landingPath = "/matrix";
-export const betaPath = "/matrix/beta";
+export const landingPath = "/";
+export const betaPath = "/beta";
+export const startPath = "/auth/matrix/start";
+export const signOutPath = "/auth/matrix/signout";
 export const callbackPath = "/matrix/oauth/callback";
 export const sessionCookie = "__Host-matrix-web";
 export const oauthCookie = "__Host-matrix-web-oauth";

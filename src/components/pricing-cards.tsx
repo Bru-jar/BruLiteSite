@@ -22,7 +22,7 @@ const INTERVAL_LABEL: Record<string, string> = {
 };
 
 const FEATURES = [
-  "BruLite client download",
+  "Matrix client download",
   "All included plugins",
   "Customer role on Discord",
   "Priority support",
@@ -100,10 +100,10 @@ export function PricingCards({
                   <h3 className="text-lg font-semibold">
                     {p.interval === "year" ? "Yearly" : "Monthly"}
                   </h3>
-                  {featured && <Badge tone="purple">Best value</Badge>}
+                  {featured && <Badge tone="accent">Best value</Badge>}
                 </div>
                 <p className="mt-1 text-sm text-muted">
-                  {p.description ?? `${p.productName} membership`}
+                  {p.description ?? p.productName}
                 </p>
                 <div className="mt-5 flex items-baseline gap-1.5">
                   <span
@@ -141,7 +141,7 @@ export function PricingCards({
                 ) : (
                   <a
                     href="/api/auth/discord?next=/pricing"
-                    className="mt-7 inline-flex w-full items-center justify-center rounded-lg bg-gradient-to-b from-primary-bright to-primary px-4 py-2 text-sm font-medium text-white shadow-lg shadow-primary/30 transition-all hover:brightness-110"
+                    className="mt-7 inline-flex w-full items-center justify-center rounded-lg bg-gradient-to-b from-primary-bright to-primary px-4 py-2 text-sm font-medium text-background shadow-lg shadow-primary/30 transition-all hover:brightness-110"
                   >
                     Sign in with Discord to subscribe
                   </a>
@@ -163,7 +163,7 @@ export function PricingCards({
           <span>
             I have read and agree to the{" "}
             <a href="/terms" className="text-accent underline">
-              BruLite Terms of Service
+              Matrix Terms of Service
             </a>
             , including the subscription, cancellation and refund policies.
           </span>
