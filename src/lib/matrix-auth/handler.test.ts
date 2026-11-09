@@ -60,16 +60,32 @@ const approve = (cookie: string, code: string, origin = config.origin) => getHan
 }, "code=" + code));
 
 test("configuration is HTTPS only and required variables fail closed", async () => {
-  expect(readMatrixAuthConfig({})).toBeNull();
+  expect(readMatrixAuthConfig({})).toBe("MATRIX_DISCORD_CLIENT_ID");
   expect(readMatrixAuthConfig({
     MATRIX_AUTH_ORIGIN: "http://matrix.example",
     MATRIX_DISCORD_CLIENT_ID: config.clientId,
     MATRIX_DISCORD_CLIENT_SECRET: config.clientSecret,
     MATRIX_DISCORD_ALLOWED_USER_ID: config.allowedUserId,
-  })).toBeNull();
+  })).toBe("MATRIX_AUTH_ORIGIN");
+  expect(readMatrixAuthConfig({
+    MATRIX_AUTH_ORIGIN: config.origin + "/",
+    MATRIX_DISCORD_CLIENT_ID: config.clientId,
+    MATRIX_DISCORD_CLIENT_SECRET: config.clientSecret,
+    MATRIX_DISCORD_ALLOWED_USER_ID: config.allowedUserId,
+  })).toEqual(config);
   expect(await (await getHandler()(request("/health"))).text()).toBe("READY");
   expect((await getHandler()(request("/desktop/start", "POST", { Origin: "https://evil.example" }))).status).toBe(400);
   expect((await getHandler()(post("/desktop/poll"))).status).toBe(401);
+});
+
+test("health classifies a missing schema without disclosing database error text", async () => {
+  const handler = matrixAuthHandler(config, async () => {
+    throw Object.assign(new Error("private database detail"), { code: "42P01" });
+  });
+  const response = await handler(request("/health"));
+  expect(response.status).toBe(503);
+  expect(response.headers.get("x-matrix-auth-check")).toBe("database-schema");
+  expect(await response.text()).toBe("Matrix authentication is unavailable.");
 });
 
 test("callback, browser confirmation and token claim are separate and single use across handlers", async () => {

@@ -26,22 +26,26 @@ function reply(status: number, text: string, extra?: Record<string, string>) {
   return new Response(text, { status, headers: { ...headers, ...extra } });
 }
 
-export function unavailable() {
-  return reply(503, "Matrix authentication is unavailable.");
+export function unavailable(check?: string) {
+  return reply(503, "Matrix authentication is unavailable.",
+    check ? { "X-Matrix-Auth-Check": check } : undefined);
 }
 
-export function readMatrixAuthConfig(env: Readonly<Record<string, string | undefined>>): Config | null {
-  const origin = env.MATRIX_AUTH_ORIGIN;
-  const clientId = env.MATRIX_DISCORD_CLIENT_ID;
-  const clientSecret = env.MATRIX_DISCORD_CLIENT_SECRET;
-  const allowedUserId = env.MATRIX_DISCORD_ALLOWED_USER_ID;
-  if (!origin || !clientId || !clientSecret || !allowedUserId || !idPattern.test(clientId) ||
-      !idPattern.test(allowedUserId) || !/^[!-~]{16,256}$/.test(clientSecret)) return null;
+export function readMatrixAuthConfig(env: Readonly<Record<string, string | undefined>>): Config | string {
+  const origin = env.MATRIX_AUTH_ORIGIN?.trim();
+  const clientId = env.MATRIX_DISCORD_CLIENT_ID?.trim();
+  const clientSecret = env.MATRIX_DISCORD_CLIENT_SECRET?.trim();
+  const allowedUserId = env.MATRIX_DISCORD_ALLOWED_USER_ID?.trim();
+  if (!clientId || !idPattern.test(clientId)) return "MATRIX_DISCORD_CLIENT_ID";
+  if (!allowedUserId || !idPattern.test(allowedUserId)) return "MATRIX_DISCORD_ALLOWED_USER_ID";
+  if (!clientSecret || !/^[!-~]{16,256}$/.test(clientSecret)) return "MATRIX_DISCORD_CLIENT_SECRET";
   try {
-    const url = new URL(origin);
-    if (url.protocol !== "https:" || url.origin !== origin) return null;
-  } catch { return null; }
-  return { origin, clientId, clientSecret, allowedUserId };
+    const url = new URL(origin ?? "");
+    if (url.protocol === "https:" && (origin === url.origin || origin === url.origin + "/")) {
+      return { origin: url.origin, clientId, clientSecret, allowedUserId };
+    }
+  } catch { /* A missing or malformed origin leaves the service closed. */ }
+  return "MATRIX_AUTH_ORIGIN";
 }
 
 function credential(request: Request, scheme: string) {
@@ -202,8 +206,15 @@ export function matrixAuthHandler(config: Config, query: Query, discordJson: Dis
       }
 
       if (route === "/health" && request.method === "GET") {
-        await store.ready();
-        return reply(200, "READY");
+        try {
+          await store.ready();
+          return reply(200, "READY");
+        } catch (error) {
+          const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
+          if (code === "42P01" || code === "3F000") return unavailable("database-schema");
+          if (code === "42501") return unavailable("database-role");
+          return unavailable("database-connection");
+        }
       }
       if (route === "/desktop/start" && request.method === "POST") {
         const bucket = Math.floor(Date.now() / 300000);
