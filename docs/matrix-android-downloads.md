@@ -2,7 +2,7 @@
 
 Matrix Home travels inside the Windows MSI. The launcher downloads the OSRS 242.2 x86_64 base and split APKs when the PC has no local package folder or verified cache. The downloads use an active Matrix desktop session. Matrix checks the length and SHA-256 of each file and finishes both checks before it creates a MuMu instance.
 
-Create a dedicated **private** Vercel Blob store and set its token as `MATRIX_PACKAGE_BLOB_TOKEN` for the BruLiteSite deployment. The existing `BLOB_READ_WRITE_TOKEN` belongs to the store behind the BruLite image proxy.
+Connect a dedicated **private** Vercel Blob store to the BruLiteSite production environment with the `MATRIX_PACKAGE` prefix. Vercel supplies its token as `MATRIX_PACKAGE_READ_WRITE_TOKEN`. The existing `BLOB_READ_WRITE_TOKEN` belongs to the store behind the BruLite image proxy.
 
 Once redistribution is authorized, upload the exact release files with the pathnames below. Preserve the pathnames, with no random suffix. A new Android release should use a new path and launcher pins.
 

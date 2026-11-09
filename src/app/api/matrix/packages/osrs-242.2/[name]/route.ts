@@ -1,5 +1,5 @@
 import { neon } from "@neondatabase/serverless";
-import { get } from "@vercel/blob";
+import { get, head } from "@vercel/blob";
 import { matrixAuthHandler, matrixAuthPath, readMatrixAuthConfig, unavailable } from "@/lib/matrix-auth/handler";
 import { deliverMatrixPackage } from "@/lib/matrix-packages";
 
@@ -23,11 +23,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ name
     }));
   }, async (pathname, abortSignal) => {
     // Use a dedicated private store. The BruLite image proxy uses a different store's token.
-    const token = process.env.MATRIX_PACKAGE_BLOB_TOKEN?.trim();
+    const token = process.env.MATRIX_PACKAGE_READ_WRITE_TOKEN?.trim();
     const store = blobStoreId(token);
     if (!token || !store || store === blobStoreId(process.env.BLOB_READ_WRITE_TOKEN)) return null;
-    const object = await get(pathname, { access: "private", token, abortSignal });
+    const options = { token, abortSignal };
+    const metadata = await head(pathname, options);
+    const object = await get(pathname, { ...options, access: "private", useCache: false });
     if (object?.statusCode !== 200) return null;
-    return { stream: object.stream, size: object.blob.size };
+    return { stream: object.stream, size: metadata.size };
   });
 }
