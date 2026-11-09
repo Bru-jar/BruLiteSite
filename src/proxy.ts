@@ -7,6 +7,7 @@ export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   if (
     pathname.startsWith("/api/") &&
+    !pathname.startsWith("/api/matrix/auth/") &&
     !["GET", "HEAD", "OPTIONS"].includes(req.method) &&
     req.cookies.has(SESSION_COOKIE)
   ) {
