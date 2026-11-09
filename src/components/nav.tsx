@@ -9,7 +9,7 @@ import { ArrowUpRight } from "lucide-react";
 export function MatrixBrand() {
   return (
     <Link href="/" className="inline-flex w-fit items-center gap-2.5">
-      <Image src="/matrix-mark.svg" alt="" width={34} height={34} unoptimized />
+      <Image src="/matrix-windows-icon.webp" alt="" width={40} height={40} unoptimized />
       <span className="text-sm font-bold tracking-[.2em]">MATRIX</span>
     </Link>
   );

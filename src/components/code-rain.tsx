@@ -17,7 +17,7 @@ export function CodeRain() {
     <div className="matrix-rain" aria-hidden="true">
       {streams.map(({ text, head, duration, delay }, column) => (
         <div key={column} className="matrix-rain-stream" style={{
-          "--rain-duration": `${duration}s`, "--rain-delay": `${delay}s`, "--rain-rest": `${(column * 23) % 110 - 28}%`,
+          "--rain-duration": `${duration}s`, "--rain-delay": `${delay}s`,
         } as CSSProperties}>
           <span>{text}<b>{head}</b></span>
         </div>
