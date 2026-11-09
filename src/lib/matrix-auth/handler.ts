@@ -250,7 +250,8 @@ export function matrixAuthHandler(config: Config, query: Query, discordJson: Dis
           return reply(200, "CANCELLED");
         }
         const token = key();
-        return await store.claim(id, hash(token))
+        const remember = request.headers.get("x-matrix-remember-me") === "1";
+        return await store.claim(id, hash(token), remember)
           ? reply(200, "VERIFIED\n" + token) : reply(200, await store.phase(id));
       }
       const revoke = route === "/session/revoke" && request.method === "POST";

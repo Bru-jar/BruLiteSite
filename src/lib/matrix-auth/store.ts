@@ -58,12 +58,14 @@ export function matrixAuthStore(query: Query) {
       );
       return row ? String(row.phase) : "EXPIRED";
     },
-    async claim(id: string, token: string) {
+    async claim(id: string, token: string, remember: boolean) {
       const rows = await query(
         "WITH granted AS (DELETE FROM matrix_auth.login_attempts " +
         "WHERE id = $1 AND phase = 'VERIFIED' AND expires_at > now() RETURNING discord_id) " +
-        "INSERT INTO matrix_auth.sessions (token_hash, discord_id) SELECT $2, discord_id FROM granted RETURNING token_hash",
-        [id, token],
+        "INSERT INTO matrix_auth.sessions (token_hash, discord_id, expires_at) " +
+        "SELECT $2, discord_id, now() + CASE WHEN $3 = 1 THEN interval '720 hours' ELSE interval '1 hour' END " +
+        "FROM granted RETURNING token_hash",
+        [id, token, remember ? 1 : 0],
       );
       return rows.length === 1;
     },
