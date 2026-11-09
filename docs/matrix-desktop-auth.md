@@ -4,7 +4,7 @@ The Matrix launcher opens Discord in the system browser. After OAuth, this site 
 
 ## Configure the first hosted test
 
-1. Use a separate Neon database or staging branch for Matrix. Run [the Matrix schema](../scripts/matrix-auth.sql) in that database as its owner. The service connection needs access to the three tables in the matrix_auth schema. The site uses MATRIX_DATABASE_URL for Matrix.
+1. Run [the Matrix schema](../scripts/matrix-auth.sql) in the Neon database used by the deployment's existing DATABASE_URL. That connection needs access to the three tables in the matrix_auth schema.
 2. In the connected Vercel project, add these server environment variables to the deployment environment.
 
    | Variable | Value |
@@ -13,7 +13,6 @@ The Matrix launcher opens Discord in the system browser. After OAuth, this site 
    | MATRIX_DISCORD_CLIENT_ID | Public application ID of the Matrix Discord app |
    | MATRIX_DISCORD_ALLOWED_USER_ID | The Discord account allowed into the first test |
    | MATRIX_DISCORD_CLIENT_SECRET | OAuth2 client secret, stored as a sensitive variable |
-   | MATRIX_DATABASE_URL | Matrix Neon connection URL, stored as a sensitive variable |
 
 3. Add the exact callback to the Matrix Discord app. For the first hosted target it is https://brulitesite.vercel.app/api/matrix/auth/callback.
 4. Deploy from the reviewed GitHub commit. Check /api/matrix/auth/health on the launcher origin. It returns READY after the service can read all three tables. A 503 means configuration or database setup needs attention.
@@ -25,4 +24,4 @@ The desktop launcher must be able to reach the HTTPS API directly. If Vercel Dep
 
 Pairing attempts expire in five minutes. Discord codes and browser approvals are single use. The server stores only hashed Matrix pairing and session credentials and discards Discord access tokens after checking identity. Session collection consumes the pairing and creates a one-hour session in one database statement. Closing the launcher requests revocation. The first test asks for a fresh sign-in on each launch.
 
-Matrix credentials and data belong in the Matrix environment variables and database. Existing BruLite desktop sessions, website OAuth, Stripe billing, and migrations use their original configuration.
+Matrix OAuth configuration uses its own environment variables. Matrix tables live in the matrix_auth schema of the shared database. BruLite desktop sessions, website OAuth, Stripe billing, and migrations use their existing tables and configuration.

@@ -6,15 +6,15 @@ export const dynamic = "force-dynamic";
 
 async function handle(request: Request) {
   const config = readMatrixAuthConfig(process.env);
-  const database = process.env.MATRIX_DATABASE_URL?.trim();
+  const database = process.env.DATABASE_URL?.trim();
   const health = request.method === "GET" && new URL(request.url).pathname === matrixAuthPath + "/health";
   if (typeof config === "string") return unavailable(health ? config : undefined);
-  if (!database) return unavailable(health ? "MATRIX_DATABASE_URL" : undefined);
+  if (!database) return unavailable(health ? "DATABASE_URL" : undefined);
   try {
     const sql = neon(database);
     return await matrixAuthHandler(config, (statement, parameters) => sql.query(statement, parameters))(request);
   } catch {
-    return unavailable(health ? "MATRIX_DATABASE_URL" : undefined);
+    return unavailable(health ? "DATABASE_URL" : undefined);
   }
 }
 
