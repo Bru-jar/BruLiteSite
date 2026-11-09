@@ -88,6 +88,18 @@ test("health classifies a missing schema without disclosing database error text"
   expect(await response.text()).toBe("Matrix authentication is unavailable.");
 });
 
+test("an empty streamed POST is accepted and an actual payload is refused", async () => {
+  const empty = new Request(config.origin + matrixAuthPath + "/desktop/start", {
+    method: "POST",
+    headers: { "x-vercel-forwarded-for": "192.0.2.21" },
+    body: new ReadableStream({ start(controller) { controller.close(); } }),
+    duplex: "half",
+  } as RequestInit);
+  const started = await getHandler()(empty);
+  expect(started.status).toBe(200);
+  expect((await getHandler()(request("/desktop/start", "POST", undefined, "unexpected"))).status).toBe(400);
+});
+
 test("callback, browser confirmation and token claim are separate and single use across handlers", async () => {
   const pending = await start();
   expect(await (await poll(pending.handle)).text()).toBe("WAITING");

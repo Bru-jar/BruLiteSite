@@ -201,8 +201,15 @@ export function matrixAuthHandler(config: Config, query: Query, discordJson: Dis
       if (route === "/complete" && request.method === "GET" && !url.search) {
         return reply(200, "Return to Matrix to see the sign-in result. You can close this tab.");
       }
-      if (request.headers.has("origin") || url.search || request.body !== null) {
+      if (request.headers.has("origin") || url.search) {
         return reply(400, "Invalid Matrix API request.");
+      }
+      if (request.body) {
+        try {
+          await limitedText(request.body, 0);
+        } catch {
+          return reply(400, "Invalid Matrix API request.");
+        }
       }
 
       if (route === "/health" && request.method === "GET") {
