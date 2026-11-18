@@ -54,6 +54,13 @@ function credential(request: Request, scheme: string) {
   return keyPattern.test(token) ? hash(token) : null;
 }
 
+export async function verifiedMatrixDesktopSession(request: Request, allowedUserId: string,
+                                                    store: ReturnType<typeof matrixAuthStore>, revoke = false) {
+  const id = credential(request, "Bearer");
+  const subject = id ? await store.session(id, revoke) : null;
+  return subject === allowedUserId ? subject : null;
+}
+
 function browserHash(request: Request) {
   const matching = (request.headers.get("cookie") ?? "").split(";").map(value => value.trim())
     .filter(value => value.startsWith(cookieName + "="));
@@ -256,9 +263,8 @@ export function matrixAuthHandler(config: Config, query: Query, discordJson: Dis
       }
       const revoke = route === "/session/revoke" && request.method === "POST";
       if (revoke || (route === "/session" && request.method === "GET")) {
-        const id = credential(request, "Bearer");
-        const subject = id ? await store.session(id, revoke) : null;
-        if (!subject || subject !== config.allowedUserId) return reply(401, "No active Matrix session.");
+        const subject = await verifiedMatrixDesktopSession(request, config.allowedUserId, store, revoke);
+        if (!subject) return reply(401, "No active Matrix session.");
         return reply(200, revoke ? "REVOKED" : "VERIFIED\n" + subject);
       }
       return reply(404, "Matrix authentication endpoint not found.");
